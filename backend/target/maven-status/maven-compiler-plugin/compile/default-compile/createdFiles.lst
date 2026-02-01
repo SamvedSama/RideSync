@@ -1,0 +1,7 @@
+com\carpool\controller\UserController.class
+com\carpool\model\UserRole.class
+com\carpool\RideSharingApplication.class
+com\carpool\model\User.class
+com\carpool\repository\UserRepository.class
+com\carpool\service\impl\UserServiceImpl.class
+com\carpool\service\UserService.class
