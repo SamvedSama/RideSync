@@ -1,2 +1,6 @@
 com\carpool\unit\UserServiceTest.class
+com\carpool\regression\RegressionTestSuite.class
+com\carpool\unit\FareStrategyTest.class
+com\carpool\integration\BookingIntegrationTest.class
 com\carpool\integration\UserControllerIntegrationTest.class
+com\carpool\system\SystemFlowTest.class
