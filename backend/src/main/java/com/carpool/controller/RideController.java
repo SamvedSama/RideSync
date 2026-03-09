@@ -1,6 +1,7 @@
 package com.carpool.controller;
 
 import com.carpool.model.Ride;
+import com.carpool.model.RideStatus;
 import com.carpool.service.RideService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +21,14 @@ public class RideController {
     // Create Ride
     @PostMapping("/{driverId}")
     public Ride createRide(@PathVariable Long driverId,
-            @Valid @RequestBody Ride ride) {
+                           @Valid @RequestBody Ride ride) {
         return service.createRide(driverId, ride);
     }
 
     // Search Ride
     @GetMapping("/search")
     public List<Ride> searchRides(@RequestParam String source,
-            @RequestParam String destination) {
+                                  @RequestParam String destination) {
         return service.searchRides(source, destination);
     }
 
@@ -35,5 +36,12 @@ public class RideController {
     @GetMapping("/{rideId}")
     public Ride getRide(@PathVariable Long rideId) {
         return service.getRide(rideId);
+    }
+
+    // Update Ride Status
+    @PutMapping("/{rideId}/status")
+    public Ride updateRideStatus(@PathVariable Long rideId,
+                                 @RequestParam RideStatus status) {
+        return service.updateRideStatus(rideId, status);
     }
 }
