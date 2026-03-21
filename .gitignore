@@ -53,4 +53,5 @@ backend/target/site/
 
 # ── Coverage ──────────────────────────────────────────────────────────────────
 backend/target/jacoco.exec
+backend/target/
 backend/target/site/jacoco/
