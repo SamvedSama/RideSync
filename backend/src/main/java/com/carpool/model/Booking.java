@@ -26,8 +26,7 @@ public class Booking {
     @JsonIgnore
     private Ride ride;
 
-    public Booking() {
-    }
+    public Booking() {}
 
     public Booking(User rider, Ride ride, int seatsBooked) {
         this.rider = rider;
@@ -36,43 +35,18 @@ public class Booking {
         this.status = BookingStatus.CONFIRMED;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public int getSeatsBooked() { return seatsBooked; }
+    public void setSeatsBooked(int seatsBooked) { this.seatsBooked = seatsBooked; }
 
-    public int getSeatsBooked() {
-        return seatsBooked;
-    }
+    public BookingStatus getStatus() { return status; }
+    public void setStatus(BookingStatus status) { this.status = status; }
 
-    public void setSeatsBooked(int seatsBooked) {
-        this.seatsBooked = seatsBooked;
-    }
+    public User getRider() { return rider; }
+    public void setRider(User rider) { this.rider = rider; }
 
-    public BookingStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BookingStatus status) {
-        this.status = status;
-    }
-
-    public User getRider() {
-        return rider;
-    }
-
-    public void setRider(User rider) {
-        this.rider = rider;
-    }
-
-    public Ride getRide() {
-        return ride;
-    }
-
-    public void setRide(Ride ride) {
-        this.ride = ride;
-    }
+    public Ride getRide() { return ride; }
+    public void setRide(Ride ride) { this.ride = ride; }
 }

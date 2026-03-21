@@ -1,133 +1,175 @@
 package com.carpool.regression;
 
+import com.carpool.TestUtils;
+import com.carpool.dto.AuthResponse;
+import com.carpool.dto.BookingResponse;
+import com.carpool.dto.RegisterRequest;
 import com.carpool.model.*;
 import com.carpool.payment.dto.PaymentRequest;
 import com.carpool.payment.dto.PaymentResponse;
 import com.carpool.payment.model.PaymentMethod;
-import com.carpool.payment.model.PaymentStatus;
-import com.carpool.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
-
-import java.time.LocalDateTime;
+import org.springframework.test.annotation.DirtiesContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * RegressionTestSuite — guards against regressions across all members.
+ * RegressionTestSuite — guards against regressions across all use cases.
  *
- * Member 1: duplicate registration
- * Member 2: overbooking
- * Member 4: duplicate payment, refund of non-success payment
+ * - Duplicate registration
+ * - Overbooking prevention
+ * - Double-booking same ride by driver (role guard)
+ * - Duplicate payment prevention
+ * - Refund of non-SUCCESS payment
+ * - Booking on cancelled ride
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class RegressionTestSuite {
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    // ── Member 1 regression ───────────────────────────────────────────────────
+    // ── Duplicate registration ────────────────────────────────────────────────
 
     @Test
     void duplicateRegistrationShouldFail() {
-        User user = new User("Dup", "dup@reg.com", "1234", "9999", UserRole.RIDER);
-        restTemplate.postForEntity("/api/users/register", user, User.class);
+        RegisterRequest req = new RegisterRequest("Dup", "dup@reg.com", "password123", "9999", UserRole.RIDER);
+        restTemplate.postForEntity("/api/users/register", req, AuthResponse.class);
 
-        ResponseEntity<String> response =
-                restTemplate.postForEntity("/api/users/register", user, String.class);
+        ResponseEntity<String> second = restTemplate.postForEntity("/api/users/register", req, String.class);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, second.getStatusCode());
+        assertTrue(second.getBody().contains("already registered"));
     }
 
-    // ── Member 2 regression ───────────────────────────────────────────────────
+    // ── Overbooking ───────────────────────────────────────────────────────────
 
     @Test
     void overbookingShouldFail() {
-        User driver = userRepository.save(
-                new User("Driver2", "driver2@reg.com", "pass", "111", UserRole.DRIVER));
-        User rider = userRepository.save(
-                new User("Rider2", "rider2@reg.com", "pass", "222", UserRole.RIDER));
+        AuthResponse driver = TestUtils.register(restTemplate, "Driver", "driver@regress.com", "pass123", "111", UserRole.DRIVER);
+        AuthResponse rider  = TestUtils.register(restTemplate, "Rider",  "rider@regress.com",  "pass123", "222", UserRole.RIDER);
 
-        Ride ride = new Ride("X", "Y", 1, 100, LocalDateTime.now().plusDays(1), driver);
-
-        ResponseEntity<Ride> rideResp = restTemplate.postForEntity(
-                "/api/rides/" + driver.getUserId(), ride, Ride.class);
+        String rideJson = """
+                {"source":"X","destination":"Y","totalSeats":1,"farePerSeat":100.0,"departureTime":"2030-12-01T09:00:00"}
+                """;
+        ResponseEntity<Ride> rideResp = restTemplate.exchange("/api/rides", HttpMethod.POST,
+                TestUtils.authEntity(rideJson, driver.getToken()), Ride.class);
         Long rideId = rideResp.getBody().getId();
 
-        restTemplate.postForEntity(
-                "/api/bookings?riderId=" + rider.getUserId() + "&rideId=" + rideId + "&seats=1",
-                null, Booking.class);
+        // Book the only seat
+        restTemplate.exchange("/api/bookings?rideId=" + rideId + "&seats=1",
+                HttpMethod.POST, TestUtils.authEntity(rider.getToken()), BookingResponse.class);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                "/api/bookings?riderId=" + rider.getUserId() + "&rideId=" + rideId + "&seats=1",
-                null, String.class);
+        // Try to book again — no seats left
+        ResponseEntity<String> resp = restTemplate.exchange(
+                "/api/bookings?rideId=" + rideId + "&seats=1",
+                HttpMethod.POST, TestUtils.authEntity(rider.getToken()), String.class);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
 
-    // ── Member 4 regression: duplicate payment ────────────────────────────────
+    // ── Driver cannot book own ride ───────────────────────────────────────────
+
+    @Test
+    void driverCannotBookOwnRide_returns403() {
+        AuthResponse driver = TestUtils.register(restTemplate, "SelfBook", "self@regress.com", "pass123", "333", UserRole.DRIVER);
+
+        String rideJson = """
+                {"source":"A","destination":"B","totalSeats":3,"farePerSeat":50.0,"departureTime":"2030-12-01T10:00:00"}
+                """;
+        restTemplate.exchange("/api/rides", HttpMethod.POST,
+                TestUtils.authEntity(rideJson, driver.getToken()), Ride.class);
+
+        // DRIVER role → @PreAuthorize("hasRole('RIDER')") → 403
+        ResponseEntity<String> resp = restTemplate.exchange(
+                "/api/bookings?rideId=1&seats=1",
+                HttpMethod.POST, TestUtils.authEntity(driver.getToken()), String.class);
+
+        assertEquals(HttpStatus.FORBIDDEN, resp.getStatusCode());
+    }
+
+    // ── Booking on cancelled ride ─────────────────────────────────────────────
+
+    @Test
+    void bookingCancelledRideShouldFail() {
+        AuthResponse driver = TestUtils.register(restTemplate, "CancelDriver", "cdriver@regress.com", "pass123", "444", UserRole.DRIVER);
+        AuthResponse rider  = TestUtils.register(restTemplate, "CancelRider",  "crider@regress.com",  "pass123", "555", UserRole.RIDER);
+
+        String rideJson = """
+                {"source":"P","destination":"Q","totalSeats":2,"farePerSeat":80.0,"departureTime":"2030-12-01T11:00:00"}
+                """;
+        ResponseEntity<Ride> rideResp = restTemplate.exchange("/api/rides", HttpMethod.POST,
+                TestUtils.authEntity(rideJson, driver.getToken()), Ride.class);
+        Long rideId = rideResp.getBody().getId();
+
+        // Driver cancels the ride
+        restTemplate.exchange("/api/rides/" + rideId + "/status?status=CANCELLED",
+                HttpMethod.PUT, TestUtils.authEntity(driver.getToken()), Ride.class);
+
+        // Rider tries to book cancelled ride → 400
+        ResponseEntity<String> resp = restTemplate.exchange(
+                "/api/bookings?rideId=" + rideId + "&seats=1",
+                HttpMethod.POST, TestUtils.authEntity(rider.getToken()), String.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+    }
+
+    // ── Duplicate payment ─────────────────────────────────────────────────────
 
     @Test
     void duplicatePaymentShouldFail() {
-        User driver = userRepository.save(
-                new User("Driver3", "driver3@reg.com", "pass", "333", UserRole.DRIVER));
-        User rider = userRepository.save(
-                new User("Rider3", "rider3@reg.com", "pass", "444", UserRole.RIDER));
+        AuthResponse driver = TestUtils.register(restTemplate, "PayDriver", "pdriver@regress.com", "pass123", "666", UserRole.DRIVER);
+        AuthResponse rider  = TestUtils.register(restTemplate, "PayRider",  "prider@regress.com",  "pass123", "777", UserRole.RIDER);
 
-        Ride ride = new Ride("A", "B", 2, 100, LocalDateTime.now().plusDays(1), driver);
-        ResponseEntity<Ride> rideResp = restTemplate.postForEntity(
-                "/api/rides/" + driver.getUserId(), ride, Ride.class);
+        String rideJson = """
+                {"source":"A","destination":"B","totalSeats":2,"farePerSeat":100.0,"departureTime":"2030-12-01T12:00:00"}
+                """;
+        ResponseEntity<Ride> rideResp = restTemplate.exchange("/api/rides", HttpMethod.POST,
+                TestUtils.authEntity(rideJson, driver.getToken()), Ride.class);
+        Long rideId = rideResp.getBody().getId();
 
-        ResponseEntity<Booking> bookingResp = restTemplate.postForEntity(
-                "/api/bookings?riderId=" + rider.getUserId()
-                        + "&rideId=" + rideResp.getBody().getId() + "&seats=1",
-                null, Booking.class);
-        Long bookingId = bookingResp.getBody().getId();
+        ResponseEntity<BookingResponse> bookResp = restTemplate.exchange(
+                "/api/bookings?rideId=" + rideId + "&seats=1",
+                HttpMethod.POST, TestUtils.authEntity(rider.getToken()), BookingResponse.class);
+        Long bookingId = bookResp.getBody().getId();
 
-        PaymentRequest req = new PaymentRequest(bookingId, PaymentMethod.UPI, 100.0);
-        restTemplate.postForEntity("/api/payments", req, PaymentResponse.class);
+        PaymentRequest payReq = new PaymentRequest(bookingId, PaymentMethod.UPI, 100.0);
 
-        // Second payment attempt on same booking
-        ResponseEntity<String> second = restTemplate.postForEntity(
-                "/api/payments", req, String.class);
+        // First payment
+        restTemplate.exchange("/api/payments", HttpMethod.POST,
+                TestUtils.authEntity(payReq, rider.getToken()), PaymentResponse.class);
+
+        // Second payment on same booking
+        ResponseEntity<String> second = restTemplate.exchange("/api/payments", HttpMethod.POST,
+                TestUtils.authEntity(payReq, rider.getToken()), String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, second.getStatusCode());
     }
 
-    // ── Member 4 regression: refund non-success payment ───────────────────────
+    // ── Refund non-existent payment ───────────────────────────────────────────
 
     @Test
-    void refundOfNonSuccessPaymentShouldFail() {
-        User driver = userRepository.save(
-                new User("Driver4", "driver4@reg.com", "pass", "555", UserRole.DRIVER));
-        User rider = userRepository.save(
-                new User("Rider4", "rider4@reg.com", "pass", "666", UserRole.RIDER));
+    void refundNonExistentPaymentShouldFail() {
+        AuthResponse admin = TestUtils.register(restTemplate, "RefAdmin", "refadmin@regress.com", "pass123", "888", UserRole.ADMIN);
 
-        Ride ride = new Ride("C", "D", 2, 100, LocalDateTime.now().plusDays(1), driver);
-        ResponseEntity<Ride> rideResp = restTemplate.postForEntity(
-                "/api/rides/" + driver.getUserId(), ride, Ride.class);
-
-        ResponseEntity<Booking> bookingResp = restTemplate.postForEntity(
-                "/api/bookings?riderId=" + rider.getUserId()
-                        + "&rideId=" + rideResp.getBody().getId() + "&seats=1",
-                null, Booking.class);
-        Long bookingId = bookingResp.getBody().getId();
-
-        // Gateway failure amount — payment stays FAILED / never reaches SUCCESS
-        PaymentRequest req = new PaymentRequest(bookingId, PaymentMethod.CARD, 100.99);
-        restTemplate.postForEntity("/api/payments", req, String.class);
-
-        // Try to get payment and refund it — payment is not SUCCESS so refund should fail
-        // We try a non-existent payment ID to test the guard
         ResponseEntity<String> refundResp = restTemplate.exchange(
-                "/api/payments/99999/refund", HttpMethod.PUT, null, String.class);
+                "/api/payments/99999/refund", HttpMethod.PUT,
+                TestUtils.authEntity(admin.getToken()), String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, refundResp.getStatusCode());
+    }
+
+    // ── Unauthenticated booking attempt ──────────────────────────────────────
+
+    @Test
+    void unauthenticatedBookingReturns401() {
+        ResponseEntity<String> resp = restTemplate.postForEntity(
+                "/api/bookings?rideId=1&seats=1", null, String.class);
+        assertEquals(HttpStatus.UNAUTHORIZED, resp.getStatusCode());
     }
 }

@@ -2,9 +2,14 @@ package com.carpool.controller;
 
 import com.carpool.model.Ride;
 import com.carpool.model.RideStatus;
+import com.carpool.model.User;
 import com.carpool.service.RideService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,30 +23,44 @@ public class RideController {
         this.service = service;
     }
 
-    // Create Ride
-    @PostMapping("/{driverId}")
-    public Ride createRide(@PathVariable Long driverId,
-                           @Valid @RequestBody Ride ride) {
-        return service.createRide(driverId, ride);
+    @PostMapping
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Ride> createRide(@AuthenticationPrincipal User currentUser,
+            @Valid @RequestBody Ride ride) {
+        return ResponseEntity.ok(service.createRide(currentUser.getUserId(), ride));
     }
 
-    // Search Ride
     @GetMapping("/search")
-    public List<Ride> searchRides(@RequestParam String source,
-                                  @RequestParam String destination) {
-        return service.searchRides(source, destination);
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Ride>> searchRides(@RequestParam String source,
+            @RequestParam String destination) {
+        return ResponseEntity.ok(service.searchRides(source, destination));
     }
 
-    // Get Ride by ID
     @GetMapping("/{rideId}")
-    public Ride getRide(@PathVariable Long rideId) {
-        return service.getRide(rideId);
+    @Transactional(readOnly = true)
+    public ResponseEntity<Ride> getRide(@PathVariable Long rideId) {
+        return ResponseEntity.ok(service.getRide(rideId));
     }
 
-    // Update Ride Status
+    @GetMapping("/my-rides")
+    @PreAuthorize("hasRole('DRIVER')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<Ride>> getMyRides(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.getRidesByDriver(currentUser.getUserId()));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Ride>> getAllRides() {
+        return ResponseEntity.ok(service.getAllRides());
+    }
+
     @PutMapping("/{rideId}/status")
-    public Ride updateRideStatus(@PathVariable Long rideId,
-                                 @RequestParam RideStatus status) {
-        return service.updateRideStatus(rideId, status);
+    @PreAuthorize("hasRole('DRIVER') or hasRole('ADMIN')")
+    public ResponseEntity<Ride> updateRideStatus(@PathVariable Long rideId,
+            @RequestParam RideStatus status,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.updateRideStatus(rideId, status));
     }
 }

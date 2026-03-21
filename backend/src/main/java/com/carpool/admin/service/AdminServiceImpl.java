@@ -17,11 +17,9 @@ import java.util.List;
 /**
  * AdminServiceImpl — concrete implementation of AdminService.
  *
- * Design Principle: Dependency Inversion Principle (DIP)
- * Depends on repository abstractions (Spring Data JPA interfaces),
- * not on any concrete database implementation.
- *
- * Every admin action is logged to AdminAuditLog for traceability.
+ * Defence-in-depth: even though the controller guards access via @PreAuthorize,
+ * the service still validates the admin role so it cannot be misused if called
+ * programmatically from another service.
  */
 @Service
 @Transactional
@@ -34,14 +32,13 @@ public class AdminServiceImpl implements AdminService {
     public AdminServiceImpl(UserRepository userRepository,
                              RideRepository rideRepository,
                              AdminAuditLogRepository auditLogRepository) {
-        this.userRepository = userRepository;
-        this.rideRepository = rideRepository;
+        this.userRepository  = userRepository;
+        this.rideRepository  = rideRepository;
         this.auditLogRepository = auditLogRepository;
     }
 
-    // ── User Management ──────────────────────────────────────────────────────
-
     @Override
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -57,12 +54,8 @@ public class AdminServiceImpl implements AdminService {
             throw new IllegalArgumentException("Cannot ban another admin");
         }
 
-        // We repurpose the phone field as a "banned" marker to keep the model
-        // minimal and avoid schema changes for this demo.
-        // In production you'd add a `banned` boolean column.
-        target.setPhone("BANNED:" + (target.getPhone() != null ? target.getPhone() : ""));
+        target.setBanned(true);
         User saved = userRepository.save(target);
-
         log(adminId, AdminAction.USER_BANNED, "USER", targetUserId, "User banned by admin " + adminId);
         return saved;
     }
@@ -74,11 +67,8 @@ public class AdminServiceImpl implements AdminService {
         User target = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + targetUserId));
 
-        if (target.getPhone() != null && target.getPhone().startsWith("BANNED:")) {
-            target.setPhone(target.getPhone().replace("BANNED:", ""));
-        }
+        target.setBanned(false);
         User saved = userRepository.save(target);
-
         log(adminId, AdminAction.USER_UNBANNED, "USER", targetUserId, "User unbanned by admin " + adminId);
         return saved;
     }
@@ -99,15 +89,13 @@ public class AdminServiceImpl implements AdminService {
 
         target.setRole(role);
         User saved = userRepository.save(target);
-
         log(adminId, AdminAction.USER_ROLE_CHANGED, "USER", targetUserId,
                 "Role changed to " + newRole + " by admin " + adminId);
         return saved;
     }
 
-    // ── Ride Management ──────────────────────────────────────────────────────
-
     @Override
+    @Transactional(readOnly = true)
     public List<Ride> getAllRides() {
         return rideRepository.findAll();
     }
@@ -128,24 +116,23 @@ public class AdminServiceImpl implements AdminService {
 
         ride.setStatus(RideStatus.CANCELLED);
         Ride saved = rideRepository.save(ride);
-
         log(adminId, AdminAction.RIDE_CANCELLED, "RIDE", rideId, "Ride cancelled by admin " + adminId);
         return saved;
     }
 
-    // ── Audit Log ────────────────────────────────────────────────────────────
-
     @Override
+    @Transactional(readOnly = true)
     public List<AdminAuditLog> getAuditLog() {
         return auditLogRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AdminAuditLog> getAuditLogByAdmin(Long adminId) {
         return auditLogRepository.findByAdminId(adminId);
     }
 
-    // ── Private helpers ──────────────────────────────────────────────────────
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private void assertAdmin(Long userId) {
         User user = userRepository.findById(userId)

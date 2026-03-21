@@ -16,3 +16,8 @@ spring:
   h2:
     console:
       enabled: false
+
+app:
+  jwt:
+    secret: TestSecretKeyForJWTSigningThatIsAtLeast256BitsLongForTesting1234567890
+    expiration-ms: 86400000

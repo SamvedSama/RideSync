@@ -1,28 +1,56 @@
-# =========================
-# Maven (Backend Build)
-# =========================
-backend/target/
+# ── Java / Maven ──────────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.tmp
 
-# =========================
-# IDE Files
-# =========================
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# ── Spring Boot ───────────────────────────────────────────────────────────────
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-prod.yml
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+frontend/dist/
+.vite/
+*.local
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
 .idea/
 *.iml
 .vscode/
+*.suo
+*.user
+*.swp
+*.swo
 .project
 .classpath
 .settings/
 
-# =========================
-# OS Files
-# =========================
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
+Thumbs.db
+desktop.ini
 
-# =========================
-# Logs
-# =========================
-*.log
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
 
-# =========================
-# H2 Database (only if file-based later)
-# =========================
+# ── Test reports ──────────────────────────────────────────────────────────────
+backend/target/surefire-reports/
+backend/target/site/
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+backend/target/jacoco.exec
+backend/target/site/jacoco/

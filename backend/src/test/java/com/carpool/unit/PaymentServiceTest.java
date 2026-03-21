@@ -1,10 +1,6 @@
 package com.carpool.unit;
 
-import com.carpool.model.Booking;
-import com.carpool.model.BookingStatus;
-import com.carpool.model.Ride;
-import com.carpool.model.User;
-import com.carpool.model.UserRole;
+import com.carpool.model.*;
 import com.carpool.payment.dto.PaymentRequest;
 import com.carpool.payment.dto.PaymentResponse;
 import com.carpool.payment.model.Payment;
@@ -22,17 +18,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for PaymentServiceImpl.
- *
- * Uses Mockito to isolate the service from the database and gateway.
- * Demonstrates DIP: we inject a mock gateway, proving the service
- * does not depend on any concrete infrastructure.
- */
 class PaymentServiceTest {
 
     private PaymentRepository paymentRepository;
@@ -44,7 +31,8 @@ class PaymentServiceTest {
     void setUp() {
         paymentRepository = Mockito.mock(PaymentRepository.class);
         bookingRepository = Mockito.mock(BookingRepository.class);
-        gateway = Mockito.mock(MockPaymentGateway.class);
+        // Use real gateway — no mocking needed
+        gateway = new MockPaymentGateway();
         paymentService = new PaymentServiceImpl(paymentRepository, bookingRepository, gateway);
     }
 
@@ -109,24 +97,23 @@ class PaymentServiceTest {
         payment.setId(10L);
 
         when(paymentRepository.findById(10L)).thenReturn(Optional.of(payment));
-        when(gateway.charge(anyDouble(), anyString())).thenReturn("TXN-UPI-ABCD1234");
         when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         PaymentResponse response = paymentService.processPayment(10L);
 
         assertEquals(PaymentStatus.SUCCESS, response.getStatus());
-        assertEquals("TXN-UPI-ABCD1234", response.getTransactionRef());
+        assertNotNull(response.getTransactionRef());
+        assertTrue(response.getTransactionRef().startsWith("TXN-UPI-"));
     }
 
     @Test
     void testProcessPayment_gatewayFailure_marksAsFailed() {
         Booking booking = makeBooking(BookingStatus.CONFIRMED);
+        // Amount ending in .99 triggers gateway failure in MockPaymentGateway
         Payment payment = new Payment(booking, 100.99, PaymentMethod.CARD);
         payment.setId(11L);
 
         when(paymentRepository.findById(11L)).thenReturn(Optional.of(payment));
-        when(gateway.charge(anyDouble(), anyString()))
-                .thenThrow(new RuntimeException("Gateway declined"));
         when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         assertThrows(IllegalArgumentException.class, () -> paymentService.processPayment(11L));
@@ -155,11 +142,9 @@ class PaymentServiceTest {
         payment.setTransactionRef("TXN-WALLET-XYZ");
 
         when(paymentRepository.findById(20L)).thenReturn(Optional.of(payment));
-        when(gateway.refund("TXN-WALLET-XYZ")).thenReturn(true);
         when(paymentRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         PaymentResponse response = paymentService.refundPayment(20L);
-
         assertEquals(PaymentStatus.REFUNDED, response.getStatus());
     }
 
@@ -175,34 +160,28 @@ class PaymentServiceTest {
         assertThrows(IllegalArgumentException.class, () -> paymentService.refundPayment(21L));
     }
 
-    // ── MockPaymentGateway direct tests ──────────────────────────────────────
+    // ── MockPaymentGateway direct tests ───────────────────────────────────────
 
     @Test
     void testGateway_charge_returnsTransactionRef() {
-        MockPaymentGateway realGateway = new MockPaymentGateway();
-        String txn = realGateway.charge(500.0, "UPI");
+        String txn = gateway.charge(500.0, "UPI");
         assertNotNull(txn);
         assertTrue(txn.startsWith("TXN-UPI-"));
     }
 
     @Test
     void testGateway_charge_amountEndingIn99_fails() {
-        MockPaymentGateway realGateway = new MockPaymentGateway();
-        assertThrows(RuntimeException.class,
-                () -> realGateway.charge(100.99, "CARD"));
+        assertThrows(RuntimeException.class, () -> gateway.charge(100.99, "CARD"));
     }
 
     @Test
     void testGateway_refund_success() {
-        MockPaymentGateway realGateway = new MockPaymentGateway();
-        assertTrue(realGateway.refund("TXN-UPI-ABCD1234"));
+        assertTrue(gateway.refund("TXN-UPI-ABCD1234"));
     }
 
     @Test
     void testGateway_invalidAmount_throws() {
-        MockPaymentGateway realGateway = new MockPaymentGateway();
-        assertThrows(IllegalArgumentException.class,
-                () -> realGateway.charge(-10.0, "CASH"));
+        assertThrows(IllegalArgumentException.class, () -> gateway.charge(-10.0, "CASH"));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
