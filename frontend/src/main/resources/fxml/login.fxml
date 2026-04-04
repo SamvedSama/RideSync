@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.LoginController" styleClass="root">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <VBox alignment="CENTER" spacing="5">
+        <Label text="Welcome Back" styleClass="label-header" />
+        <Label text="Please log in to your account" styleClass="label-subheader" />
+    </VBox>
+
+    <Label fx:id="errorLabel" styleClass="label-subheader" style="-fx-text-fill: #ef4444; -fx-font-weight: bold;" />
+
+    <VBox spacing="5" maxWidth="300">
+        <Label text="Email" styleClass="label-field" />
+        <TextField fx:id="emailField" promptText="john@example.com" />
+    </VBox>
+
+    <VBox spacing="5" maxWidth="300">
+        <Label text="Password" styleClass="label-field" />
+        <StackPane>
+            <PasswordField fx:id="passwordField" promptText="••••••••" />
+            <TextField fx:id="passwordTextField" promptText="••••••••" visible="false" />
+        </StackPane>
+        <CheckBox fx:id="showPasswordBox" text="Show Password" />
+    </VBox>
+
+    <Button mnemonicParsing="false" onAction="#handleLogin" text="Sign In" styleClass="button" style="-fx-pref-width: 300;" />
+
+    <HBox alignment="CENTER" spacing="5">
+        <Label text="Don't have an account?" textFill="#64748b" />
+        <Hyperlink text="Sign up" onAction="#goToRegister" styleClass="hyperlink" />
+    </HBox>
+</VBox>

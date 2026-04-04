@@ -16,11 +16,15 @@ public interface RideRepository extends JpaRepository<Ride, Long> {
     @Query("SELECT DISTINCT r FROM Ride r LEFT JOIN FETCH r.bookings " +
             "WHERE LOWER(r.source) = LOWER(:source) " +
             "AND LOWER(r.destination) = LOWER(:destination) " +
-            "AND r.status = :status")
-    List<Ride> findBySourceIgnoreCaseAndDestinationIgnoreCaseAndStatus(
+            "AND r.status IN :statuses")
+    List<Ride> findBySourceIgnoreCaseAndDestinationIgnoreCaseAndStatuses(
             @Param("source") String source,
             @Param("destination") String destination,
-            @Param("status") RideStatus status);
+            @Param("statuses") List<RideStatus> statuses);
+
+    @Query("SELECT DISTINCT r FROM Ride r LEFT JOIN FETCH r.bookings " +
+            "WHERE r.status IN :statuses")
+    List<Ride> findByStatuses(@Param("statuses") List<RideStatus> statuses);
 
     @Query("SELECT DISTINCT r FROM Ride r LEFT JOIN FETCH r.bookings WHERE r.driver.userId = :driverId")
     List<Ride> findByDriverUserId(@Param("driverId") Long driverId);

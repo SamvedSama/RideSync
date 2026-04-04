@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox alignment="CENTER" spacing="25.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.AdminDashboardController" styleClass="root">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <VBox alignment="CENTER" spacing="5">
+        <Label text="Security &amp; Moderation" styleClass="label-header" style="-fx-text-fill: #8b5cf6;" />
+        <Label fx:id="adminWelcomeLabel" text="Admin Console" styleClass="label-subheader" />
+    </VBox>
+
+    <HBox spacing="20" alignment="CENTER">
+        <Button mnemonicParsing="false" text="View Audit Logs" styleClass="button" style="-fx-background-color: #8b5cf6; -fx-pref-width: 200; -fx-pref-height: 50;" />
+        <Button mnemonicParsing="false" text="Manage Users" styleClass="button" style="-fx-background-color: #8b5cf6; -fx-pref-width: 200; -fx-pref-height: 50;" />
+    </HBox>
+
+    <VBox spacing="10" alignment="CENTER" styleClass="card">
+        <Label text="System status: Healthy" styleClass="label-field" style="-fx-text-fill: #10b981;" />
+        <Label text="No pending user reports or flagged rides." textFill="#64748b" />
+    </VBox>
+
+    <VBox spacing="10" alignment="CENTER">
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="Standard Dashboard" styleClass="button-secondary" style="-fx-pref-width: 200; -fx-pref-height: 45;" />
+        <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout" styleClass="button-danger" style="-fx-pref-width: 200; -fx-pref-height: 45;" />
+    </VBox>
+</VBox>

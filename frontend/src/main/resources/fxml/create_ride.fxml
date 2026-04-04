@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox alignment="CENTER" spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.CreateRideController" styleClass="root">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="Create a New Ride" styleClass="label-header" />
+    <Label text="Offer a ride to passengers." styleClass="label-subheader" />
+
+    <Label fx:id="statusLabel" styleClass="label-subheader" style="-fx-text-fill: #10b981; -fx-font-weight: bold;" />
+
+    <VBox spacing="10" maxWidth="350">
+        <Label text="Pickup Location" styleClass="label-field" />
+        <TextField fx:id="sourceField" promptText="e.g. Koramangala, Bengaluru" styleClass="text-field" />
+
+        <Label text="Drop Location" styleClass="label-field" />
+        <TextField fx:id="destinationField" promptText="e.g. Indiranagar, Bengaluru" styleClass="text-field" />
+        
+        <Label text="Departure Date &amp; Time" styleClass="label-field" />
+        <HBox spacing="10">
+            <javafx.scene.control.DatePicker fx:id="datePicker" promptText="Select Date" styleClass="text-field" prefWidth="180"/>
+            <TextField fx:id="timeField" promptText="HH:mm" styleClass="text-field" prefWidth="80" />
+        </HBox>
+
+        
+        <HBox spacing="10">
+             <VBox spacing="5" HBox.hgrow="ALWAYS">
+                 <Label text="Available Seats" styleClass="label-field" />
+                 <TextField fx:id="seatsField" promptText="4" styleClass="text-field" />
+             </VBox>
+             <VBox spacing="5" HBox.hgrow="ALWAYS">
+                 <Label text="Price (₹)" styleClass="label-field" />
+                 <TextField fx:id="priceField" promptText="25.00" styleClass="text-field" />
+             </VBox>
+        </HBox>
+    </VBox>
+
+    <HBox spacing="15" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="Back to Dashboard" styleClass="button-secondary" style="-fx-pref-width: 150;" />
+        <Button mnemonicParsing="false" onAction="#handleCreateRide" text="Publish Ride" styleClass="button-success" style="-fx-pref-width: 150;" />
+    </HBox>
+
+</VBox>

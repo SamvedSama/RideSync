@@ -32,8 +32,18 @@ public class RideController {
 
     @GetMapping("/search")
     @Transactional(readOnly = true)
-    public ResponseEntity<List<Ride>> searchRides(@RequestParam String source,
-            @RequestParam String destination) {
+    public ResponseEntity<List<Ride>> searchRides(
+            @RequestParam(required = false) String source,
+            @RequestParam(required = false) String destination) {
+
+        if ((source == null || source.isBlank()) && (destination == null || destination.isBlank())) {
+            return ResponseEntity.ok(service.getAvailableRides());
+        }
+
+        if (source == null || source.isBlank() || destination == null || destination.isBlank()) {
+            return ResponseEntity.ok(service.getAvailableRides());
+        }
+
         return ResponseEntity.ok(service.searchRides(source, destination));
     }
 

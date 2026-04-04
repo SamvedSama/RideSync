@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox alignment="TOP_CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.SearchRidesController" styleClass="root">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="Search Rides" styleClass="label-header" />
+
+    <HBox spacing="10" alignment="CENTER">
+         <TextField fx:id="sourceField" promptText="Source" styleClass="text-field" style="-fx-pref-width: 200;" />
+         <TextField fx:id="destinationField" promptText="Destination" styleClass="text-field" style="-fx-pref-width: 200;" />
+         <Button mnemonicParsing="false" onAction="#handleSearch" text="Search" styleClass="button" style="-fx-pref-width: 100;" />
+    </HBox>
+    
+    <Label fx:id="statusLabel" style="-fx-font-weight: bold; -fx-padding: 5 0 0 0;" />
+
+    <ListView fx:id="ridesListView" styleClass="card" VBox.vgrow="ALWAYS" />
+
+    <HBox fx:id="bookingBox" spacing="10" alignment="CENTER" visible="false">
+         <Label text="Seats:" styleClass="label-field"/>
+         <javafx.scene.control.Spinner fx:id="seatsSpinner" prefWidth="80" />
+         <Button mnemonicParsing="false" onAction="#handleBookRide" text="Book Seats" styleClass="button-success" />
+    </HBox>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="Back to Dashboard" styleClass="button-secondary" style="-fx-pref-width: 200;" />
+        <Button fx:id="trackerButton" mnemonicParsing="false" onAction="#goToMap" text="View Live Tracker" styleClass="button-success" style="-fx-pref-width: 200;" visible="false" />
+    </HBox>
+
+</VBox>

@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,8 +32,32 @@ public class BookingController {
     }
 
     @PutMapping("/{bookingId}/cancel")
+    @PreAuthorize("hasRole('RIDER') or hasRole('DRIVER') or hasRole('ADMIN')")
     public ResponseEntity<BookingResponse> cancel(@PathVariable Long bookingId) {
         return ResponseEntity.ok(BookingResponse.from(bookingService.cancelBooking(bookingId)));
+    }
+
+    @PutMapping("/{bookingId}/refresh")
+    @PreAuthorize("hasRole('RIDER') or hasRole('DRIVER') or hasRole('ADMIN')")
+    public ResponseEntity<BookingResponse> refreshBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(BookingResponse.from(bookingService.refreshBookingState(bookingId)));
+    }
+
+    @PostMapping("/ride/{rideId}/start")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<BookingResponse> startRideWithOtp(
+            @PathVariable Long rideId,
+            @AuthenticationPrincipal User currentUser,
+            @RequestBody Map<String, String> payload) {
+
+        String otp = payload.get("otp");
+        if (otp == null || otp.isBlank()) {
+            throw new IllegalArgumentException("OTP is required");
+        }
+
+        return ResponseEntity.ok(
+                BookingResponse.from(bookingService.startRideWithOtp(rideId, otp, currentUser.getUserId()))
+        );
     }
 
     @GetMapping("/my-bookings")
@@ -43,6 +68,7 @@ public class BookingController {
     }
 
     @GetMapping("/ride/{rideId}")
+    @PreAuthorize("hasRole('DRIVER') or hasRole('ADMIN')")
     public ResponseEntity<List<BookingResponse>> getBookingsForRide(@PathVariable Long rideId) {
         return ResponseEntity.ok(bookingService.getBookingsForRide(rideId)
                 .stream().map(BookingResponse::from).collect(Collectors.toList()));

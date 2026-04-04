@@ -9,4 +9,7 @@ public interface BookingService {
     Booking cancelBooking(Long bookingId);
     List<Booking> getBookingsByRider(Long riderId);
     List<Booking> getBookingsForRide(Long rideId);
+
+    Booking refreshBookingState(Long bookingId);
+    Booking startRideWithOtp(Long rideId, String otp, Long driverId);
 }

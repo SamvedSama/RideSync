@@ -45,15 +45,26 @@ public class RideServiceImpl implements RideService {
         ride.setStatus(RideStatus.PUBLISHED);
 
         Ride saved = rideRepository.save(ride);
-        saved.setAvailableSeats(saved.getTotalSeats()); // no bookings yet
+        saved.setAvailableSeats(saved.getTotalSeats());
         return saved;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Ride> searchRides(String source, String destination) {
-        List<Ride> rides = rideRepository.findBySourceIgnoreCaseAndDestinationIgnoreCaseAndStatus(
-                source, destination, RideStatus.PUBLISHED);
+        List<Ride> rides = rideRepository.findBySourceIgnoreCaseAndDestinationIgnoreCaseAndStatuses(
+                source,
+                destination,
+                List.of(RideStatus.PUBLISHED, RideStatus.BOOKED)
+        );
+        rides.forEach(r -> r.setAvailableSeats(r.getAvailableSeats()));
+        return rides;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Ride> getAvailableRides() {
+        List<Ride> rides = rideRepository.findByStatuses(List.of(RideStatus.PUBLISHED, RideStatus.BOOKED));
         rides.forEach(r -> r.setAvailableSeats(r.getAvailableSeats()));
         return rides;
     }
@@ -63,7 +74,6 @@ public class RideServiceImpl implements RideService {
     public Ride getRide(Long rideId) {
         Ride ride = rideRepository.findByIdWithBookings(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
-        // Force computation while session is open and cache it in the transient field
         ride.setAvailableSeats(ride.getAvailableSeats());
         return ride;
     }
@@ -72,6 +82,15 @@ public class RideServiceImpl implements RideService {
     public Ride updateRideStatus(Long rideId, RideStatus status) {
         Ride ride = rideRepository.findByIdWithBookings(rideId)
                 .orElseThrow(() -> new RuntimeException("Ride not found"));
+
+        if (ride.getStatus() == RideStatus.COMPLETED) {
+            throw new IllegalArgumentException("Completed ride cannot be modified");
+        }
+
+        if (ride.getStatus() == RideStatus.IN_PROGRESS &&
+                (status == RideStatus.PUBLISHED || status == RideStatus.BOOKED)) {
+            throw new IllegalArgumentException("In-progress ride cannot move backwards");
+        }
 
         ride.setStatus(status);
         Ride updatedRide = rideRepository.save(ride);

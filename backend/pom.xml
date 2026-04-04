@@ -74,11 +74,10 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- H2 Database (tests only) -->
+        <!-- H2 Database (tests only normally, using for local run here) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Testing -->

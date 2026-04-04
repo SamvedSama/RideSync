@@ -88,7 +88,9 @@ public class Ride {
         if (bookings == null || bookings.isEmpty())
             return totalSeats;
         int booked = bookings.stream()
-                .filter(b -> b.getStatus() == BookingStatus.CONFIRMED)
+                .filter(b -> b.getStatus() == BookingStatus.CONFIRMED || 
+                             b.getStatus() == BookingStatus.OTP_PENDING || 
+                             b.getStatus() == BookingStatus.IN_PROGRESS)
                 .mapToInt(Booking::getSeatsBooked)
                 .sum();
         return totalSeats - booked;
@@ -108,6 +110,23 @@ public class Ride {
         booking.setRide(null);
     }
 
+        @JsonIgnore
+    public boolean hasActiveBookings() {
+        return bookings != null && bookings.stream()
+                .anyMatch(b -> b.getStatus() != BookingStatus.CANCELLED);
+    }
+
+    @JsonIgnore
+    public boolean hasOtpPendingBooking() {
+        return bookings != null && bookings.stream()
+                .anyMatch(b -> b.getStatus() == BookingStatus.OTP_PENDING);
+    }
+
+    @JsonIgnore
+    public boolean hasInProgressBooking() {
+        return bookings != null && bookings.stream()
+                .anyMatch(b -> b.getStatus() == BookingStatus.IN_PROGRESS);
+    }
     public Long getId() {
         return id;
     }

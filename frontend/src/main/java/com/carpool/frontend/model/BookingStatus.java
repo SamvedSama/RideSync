@@ -1,9 +1,8 @@
-package com.carpool.model;
+package com.carpool.frontend.model;
 
 public enum BookingStatus {
-    INITIATED,
-    CONFIRMED,
     OTP_PENDING,
+    CONFIRMED,
     IN_PROGRESS,
     COMPLETED,
     CANCELLED
