@@ -98,4 +98,20 @@ public class AuthService {
             return false;
         }
     }
+    
+    public com.carpool.frontend.model.User getUserProfile(Long userId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + userId))
+                .header("Authorization", "Bearer " + SessionManager.getToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), com.carpool.frontend.model.User.class);
+        } else {
+            throw new Exception("Failed to get user profile: " + response.body());
+        }
+    }
 }

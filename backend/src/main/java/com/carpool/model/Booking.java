@@ -42,6 +42,12 @@ public class Booking {
     @JsonIgnore
     private Ride ride;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    private Payment payment;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     public Booking() {}
 
     public Booking(User rider, Ride ride, int seatsBooked) {
@@ -108,4 +114,13 @@ public class Booking {
 
     public Ride getRide() { return ride; }
     public void setRide(Ride ride) { this.ride = ride; }
+
+    public Payment getPayment() { return payment; }
+    public void setPayment(Payment payment) { this.payment = payment; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    // Add convenience method for passenger
+    public User getPassenger() { return rider; }
 }

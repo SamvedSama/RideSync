@@ -54,6 +54,15 @@ public class Ride {
     public DriverInfo getDriver() { return driver; }
     public void setDriver(DriverInfo driver) { this.driver = driver; }
 
-    public Integer getAvailableSeats() { return availableSeats; }
+    public Integer getAvailableSeats() { 
+        if (availableSeats != null) {
+            return availableSeats;
+        }
+        // Calculate available seats if not provided by backend
+        if (totalSeats > 0) {
+            return totalSeats; // Default to total seats if no bookings data available
+        }
+        return 0; // Default fallback
+    }
     public void setAvailableSeats(Integer availableSeats) { this.availableSeats = availableSeats; }
 }

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.RideTrackingController">
+   <children>
+      <VBox layoutX="20.0" layoutY="20.0" spacing="15.0">
+         <children>
+            <Label fx:id="rideTitleLabel" text="Ride Tracking" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+            
+            <HBox spacing="30.0">
+               <children>
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label fx:id="sourceLabel" text="From: " style="-fx-font-size: 14px;" />
+                        <Label fx:id="destinationLabel" text="To: " style="-fx-font-size: 14px;" />
+                        <Label fx:id="driverLabel" text="Driver: " style="-fx-font-size: 14px;" />
+                        <Label fx:id="statusLabel" text="Status: " style="-fx-font-size: 14px;" />
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="5.0">
+                     <children>
+                        <Label fx:id="currentLocationLabel" text="Current Location: --" style="-fx-font-size: 14px;" />
+                        <Label fx:id="estimatedTimeLabel" text="ETA: --" style="-fx-font-size: 14px;" />
+                        <Label fx:id="passengerCountLabel" text="Passengers: 0/0" style="-fx-font-size: 14px;" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            
+            <VBox spacing="10.0">
+               <children>
+                  <Label text="Ride Progress" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                  <ProgressBar fx:id="rideProgressBar" progress="0.0" prefWidth="500.0" prefHeight="20.0" />
+               </children>
+            </VBox>
+            
+            <HBox spacing="15.0">
+               <children>
+                  <Button fx:id="startRideButton" text="Start Ride" onAction="#startRide" prefWidth="120.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+                  <Button fx:id="completeRideButton" text="Complete Ride" onAction="#completeRide" prefWidth="120.0" style="-fx-background-color: #2196F3; -fx-text-fill: white;" />
+                  <Button fx:id="emergencyButton" text="Emergency" onAction="#triggerEmergency" prefWidth="120.0" style="-fx-background-color: #f44336; -fx-text-fill: white;" />
+                  <Button fx:id="shareTripButton" text="Share Trip" onAction="#shareTripDetails" prefWidth="120.0" style="-fx-background-color: #FF9800; -fx-text-fill: white;" />
+               </children>
+            </HBox>
+            
+            <HBox spacing="30.0">
+               <children>
+                  <VBox spacing="10.0">
+                     <children>
+                        <Label text="Passengers" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                        <VBox fx:id="passengerListVBox" spacing="5.0" prefWidth="200.0" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10;">
+                           <!-- Passenger list will be populated dynamically -->
+                        </VBox>
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="10.0">
+                     <children>
+                        <Label text="Route Details" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                        <ListView fx:id="routeListView" prefWidth="250.0" prefHeight="150.0" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            
+            <HBox spacing="15.0">
+               <children>
+                  <Button text="Back to Dashboard" onAction="#goBack" prefWidth="150.0" />
+                  <Button text="Refresh Status" onAction="#refreshStatus" prefWidth="150.0" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

@@ -24,7 +24,7 @@ public class RideController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DRIVER')")
+    @PreAuthorize("hasRole('DRIVER') or hasRole('PASSENGER')")
     public ResponseEntity<Ride> createRide(@AuthenticationPrincipal User currentUser,
             @Valid @RequestBody Ride ride) {
         return ResponseEntity.ok(service.createRide(currentUser.getUserId(), ride));
@@ -72,5 +72,26 @@ public class RideController {
             @RequestParam RideStatus status,
             @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(service.updateRideStatus(rideId, status));
+    }
+
+    @PutMapping("/{rideId}/start")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Ride> startRide(@PathVariable Long rideId,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.updateRideStatus(rideId, RideStatus.IN_PROGRESS));
+    }
+
+    @PutMapping("/{rideId}/complete")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Ride> completeRide(@PathVariable Long rideId,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.updateRideStatus(rideId, RideStatus.COMPLETED));
+    }
+
+    @PutMapping("/{rideId}/cancel")
+    @PreAuthorize("hasRole('DRIVER') or hasRole('ADMIN')")
+    public ResponseEntity<Ride> cancelRide(@PathVariable Long rideId,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.updateRideStatus(rideId, RideStatus.CANCELLED));
     }
 }

@@ -23,7 +23,7 @@ public class BookingController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('RIDER')")
+    @PreAuthorize("hasRole('RIDER') or hasRole('PASSENGER')")
     public ResponseEntity<BookingResponse> bookRide(@AuthenticationPrincipal User currentUser,
                                                      @RequestParam Long rideId,
                                                      @RequestParam int seats) {
@@ -61,7 +61,7 @@ public class BookingController {
     }
 
     @GetMapping("/my-bookings")
-    @PreAuthorize("hasRole('RIDER')")
+    @PreAuthorize("hasRole('RIDER') or hasRole('PASSENGER')")
     public ResponseEntity<List<BookingResponse>> getMyBookings(@AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(bookingService.getBookingsByRider(currentUser.getUserId())
                 .stream().map(BookingResponse::from).collect(Collectors.toList()));

@@ -1,10 +1,12 @@
 package com.carpool.observer;
 
 import com.carpool.model.Ride;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class RideStatusManager {
 
     private final List<RideStatusObserver> observers = new ArrayList<>();

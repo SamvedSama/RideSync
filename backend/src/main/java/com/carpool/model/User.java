@@ -35,6 +35,15 @@ public class User {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean banned = false;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean verified = false;
+
+    @Column(columnDefinition = "double default 0.0")
+    private double rating = 0.0;
+
+    private String licenseNumber;
+    private String vehicleModel;
+
     public User() {}
 
     public User(String name, String email, String password, String phone, UserRole role) {
@@ -66,4 +75,20 @@ public class User {
 
     public boolean isBanned() { return banned; }
     public void setBanned(boolean banned) { this.banned = banned; }
+
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
+
+    public String getLicenseNumber() { return licenseNumber; }
+    public void setLicenseNumber(String licenseNumber) { this.licenseNumber = licenseNumber; }
+
+    public String getVehicleModel() { return vehicleModel; }
+    public void setVehicleModel(String vehicleModel) { this.vehicleModel = vehicleModel; }
+
+    // Add getId method for compatibility
+    public Long getId() { return userId; }
+    public void setId(Long id) { this.userId = id; }
 }

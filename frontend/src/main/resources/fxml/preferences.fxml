@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.PreferencesController">
+   <children>
+      <VBox layoutX="20.0" layoutY="20.0" spacing="20.0">
+         <children>
+            <Label text="Preferences & Settings" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="General Settings" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <Label text="Language:" prefWidth="100.0" />
+                        <ComboBox fx:id="languageComboBox" prefWidth="150.0" />
+                     </children>
+                  </HBox>
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <Label text="Currency:" prefWidth="100.0" />
+                        <ComboBox fx:id="currencyComboBox" prefWidth="150.0" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="Notification Preferences" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  
+                  <HBox spacing="30.0">
+                     <children>
+                        <CheckBox fx:id="emailNotificationsCheckBox" text="Email Notifications" />
+                        <CheckBox fx:id="smsNotificationsCheckBox" text="SMS Notifications" />
+                        <CheckBox fx:id="pushNotificationsCheckBox" text="Push Notifications" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="Privacy Settings" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  
+                  <HBox spacing="30.0">
+                     <children>
+                        <CheckBox fx:id="locationSharingCheckBox" text="Allow Location Sharing" />
+                        <CheckBox fx:id="profileViewCheckBox" text="Allow Profile View" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="Ride Preferences" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <Label text="Seat Type:" prefWidth="100.0" />
+                        <ComboBox fx:id="seatTypeComboBox" prefWidth="150.0" />
+                     </children>
+                  </HBox>
+                  
+                  <HBox spacing="30.0">
+                     <children>
+                        <CheckBox fx:id="musicCheckBox" text="Allow Music" />
+                        <CheckBox fx:id="smokingCheckBox" text="Allow Smoking" />
+                        <CheckBox fx:id="petsCheckBox" text="Allow Pets" />
+                        <CheckBox fx:id="conversationCheckBox" text="Allow Conversation" />
+                     </children>
+                  </HBox>
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <Label text="Max Fare Range:" prefWidth="120.0" />
+                        <Slider fx:id="maxFareSlider" min="10.0" max="100.0" value="50.0" prefWidth="200.0" />
+                        <Label fx:id="maxFareLabel" text="$50.00" prefWidth="60.0" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="Payment Preferences" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <Label text="Payment Method:" prefWidth="120.0" />
+                        <ComboBox fx:id="paymentMethodComboBox" prefWidth="150.0" />
+                     </children>
+                  </HBox>
+                  
+                  <HBox spacing="20.0">
+                     <children>
+                        <CheckBox fx:id="autoPayCheckBox" text="Enable Auto-Pay" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            
+            <HBox spacing="15.0">
+               <children>
+                  <Button text="Save Preferences" onAction="#savePreferences" prefWidth="150.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+                  <Button text="Reset to Defaults" onAction="#resetToDefaults" prefWidth="150.0" style="-fx-background-color: #FF9800; -fx-text-fill: white;" />
+                  <Button text="Back to Dashboard" onAction="#goBack" prefWidth="150.0" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

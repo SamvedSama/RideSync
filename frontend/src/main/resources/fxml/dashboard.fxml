@@ -26,13 +26,21 @@
 
     <HBox spacing="20" alignment="CENTER">
         <!-- Rider Actions -->
-        <VBox fx:id="riderMenu" spacing="10" alignment="CENTER">
+        <VBox fx:id="riderMenu" spacing="15" alignment="CENTER">
+            <!-- Current Ride Status -->
+            <VBox fx:id="currentRideStatusBox" spacing="10" alignment="CENTER" styleClass="card" style="-fx-padding: 20px; -fx-min-width: 300;">
+                <Label fx:id="currentRideStatusLabel" text="No Active Ride" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #94a3b8;" />
+                <Label fx:id="currentRideDetailsLabel" text="" style="-fx-font-size: 12px; -fx-text-fill: #64748b;" />
+                <Button fx:id="viewRideButton" mnemonicParsing="false" onAction="#viewCurrentRide" text="View Details" styleClass="button-secondary" style="-fx-pref-width: 200; -fx-pref-height: 40;" visible="false" />
+            </VBox>
+            
             <Button mnemonicParsing="false" onAction="#goToSearchRides" text="Search For Rides" styleClass="button" style="-fx-pref-width: 250; -fx-pref-height: 50;" />
         </VBox>
         
         <!-- Driver Actions -->
         <VBox fx:id="driverMenu" spacing="10" alignment="CENTER" visible="false" managed="false">
             <Button fx:id="driverActionButton" mnemonicParsing="false" onAction="#goToCreateRide" text="Create a Ride" styleClass="button-success" style="-fx-pref-width: 250; -fx-pref-height: 50;" />
+            <Button mnemonicParsing="false" onAction="#goToViewMyRides" text="View My Rides" styleClass="button" style="-fx-pref-width: 250; -fx-pref-height: 45;" />
         </VBox>
     </HBox>
 

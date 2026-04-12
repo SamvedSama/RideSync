@@ -112,4 +112,62 @@ public class RideService {
             throw new Exception("Error fetching ride: " + response.body());
         }
     }
+    
+    public Ride getRideById(Long rideId) throws Exception {
+        return getRide(rideId);
+    }
+    
+    public List<com.carpool.frontend.model.Booking> getRideBookings(Long rideId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + rideId + "/bookings"))
+                .header("Authorization", "Bearer " + SessionManager.getToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), new TypeReference<List<com.carpool.frontend.model.Booking>>() {});
+        } else {
+            throw new Exception("Error fetching ride bookings: " + response.body());
+        }
+    }
+    
+    public List<Ride> getBookedRides() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/booked"))
+                .header("Authorization", "Bearer " + SessionManager.getToken())
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), new TypeReference<List<Ride>>() {});
+        } else {
+            throw new Exception("Error fetching booked rides: " + response.body());
+        }
+    }
+    
+    public void startRide(Long rideId) throws Exception {
+        updateRideStatus(rideId, RideStatus.IN_PROGRESS);
+    }
+    
+    public void completeRide(Long rideId) throws Exception {
+        updateRideStatus(rideId, RideStatus.COMPLETED);
+    }
+    
+    public void shareTripDetails(Long rideId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + rideId + "/share"))
+                .header("Authorization", "Bearer " + SessionManager.getToken())
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new Exception("Error sharing trip details: " + response.body());
+        }
+    }
 }

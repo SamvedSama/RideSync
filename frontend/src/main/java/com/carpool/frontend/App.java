@@ -22,7 +22,7 @@ public class App extends Application {
     public static void setRoot(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
         Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root, 1000, 700);
+        Scene scene = new Scene(root, 1400, 900);
         
         // Ensure uniform styling
         String cssPath = App.class.getResource("/css/styles.css").toExternalForm();

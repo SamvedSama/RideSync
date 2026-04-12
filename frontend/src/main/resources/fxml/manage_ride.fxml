@@ -25,18 +25,31 @@
         <Label fx:id="statusLabel" text="..." />
     </VBox>
 
-    <Label fx:id="actionStatusLabel" style="-fx-font-weight: bold; -fx-padding: 5 0 0 0;" />
+    <Label text="Bookings" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-padding: 15 0 10 0; -fx-text-fill: #38bdf8;" />
+    <javafx.scene.control.ListView fx:id="bookingsListView" styleClass="card" VBox.vgrow="ALWAYS" prefHeight="400" maxHeight="600" />
 
-    <HBox fx:id="startRideBox" spacing="10" alignment="CENTER" visible="false">
+    <Label fx:id="actionStatusLabel" style="-fx-font-weight: bold; -fx-padding: 5 0 0 0;" />
+    <Label text="Use the buttons below to change ride status" style="-fx-font-size: 12px; -fx-text-fill: #64748b;" />
+
+    <HBox fx:id="startRideBox" spacing="10" alignment="CENTER" visible="false" managed="false">
          <TextField fx:id="otpField" promptText="Enter Start OTP" styleClass="text-field" prefWidth="120" />
          <Button mnemonicParsing="false" onAction="#handleStartRide" text="Start Ride" styleClass="button-success" />
     </HBox>
 
-    <HBox spacing="15" alignment="CENTER">
-        <Button fx:id="completeButton" mnemonicParsing="false" onAction="#handleCompleteRide" text="Complete Ride" styleClass="button-success" style="-fx-pref-width: 150;" />
-        <Button mnemonicParsing="false" onAction="#handleCancelRide" text="Cancel Ride" styleClass="button-danger" style="-fx-pref-width: 150;" />
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="ongoingButton" mnemonicParsing="false" onAction="#handleSetOngoing" text="Set Ongoing" styleClass="button-warning" style="-fx-pref-width: 120;" />
+        <Button fx:id="completedButton" mnemonicParsing="false" onAction="#handleSetCompleted" text="Set Completed" styleClass="button-success" style="-fx-pref-width: 120;" />
+        <Button fx:id="cancelledButton" mnemonicParsing="false" onAction="#handleSetCancelled" text="Set Cancelled" styleClass="button-danger" style="-fx-pref-width: 120;" />
     </HBox>
 
-    <Button mnemonicParsing="false" onAction="#goToDashboard" text="Back to Dashboard" styleClass="button-secondary" style="-fx-pref-width: 200;" />
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="completeButton" mnemonicParsing="false" onAction="#handleCompleteRide" text="Complete Ride &amp; Payment" styleClass="button-success" style="-fx-pref-width: 150;" />
+        <Button mnemonicParsing="false" onAction="#handleViewPaymentStatus" text="View Payment Status" styleClass="button-info" style="-fx-pref-width: 150;" />
+    </HBox>
+
+    <HBox spacing="15" alignment="CENTER">
+        <Button mnemonicParsing="false" onAction="#refreshRide" text="Refresh" styleClass="button-secondary" style="-fx-pref-width: 120;" />
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="Back to Dashboard" styleClass="button-secondary" style="-fx-pref-width: 200;" />
+    </HBox>
 
 </VBox>

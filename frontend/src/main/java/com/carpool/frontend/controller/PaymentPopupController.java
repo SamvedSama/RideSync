@@ -3,23 +3,29 @@ package com.carpool.frontend.controller;
 import com.carpool.frontend.App;
 import com.carpool.frontend.model.Ride;
 import com.carpool.frontend.model.RideStatus;
+import com.carpool.frontend.model.Booking;
 import com.carpool.frontend.service.RideService;
+import com.carpool.frontend.service.PaymentService;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class PaymentPopupController {
 
     private final RideService rideService = new RideService();
+    private final PaymentService paymentService = new PaymentService();
 
     public void showPaymentQR(Ride ride) {
         Stage popupStage = new Stage();
@@ -77,5 +83,198 @@ public class PaymentPopupController {
                 });
             }
         }).start();
+    }
+    
+    public void showPassengerPaymentPopup(Booking booking) {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Complete Payment");
+
+        VBox layout = new VBox(15);
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-padding: 30; -fx-background-color: #ffffff;");
+
+        Label title = new Label("Complete Payment");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label fareLabel = new Label("Amount due: $" + String.format("%.2f", booking.getTotalFare()));
+        fareLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #10b981;");
+
+        Label routeLabel = new Label(booking.getSource() + " -> " + booking.getDestination());
+        routeLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #64748b;");
+
+        // Payment method selection
+        Label paymentMethodLabel = new Label("Select Payment Method:");
+        paymentMethodLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #374151;");
+
+        ComboBox<javafx.util.Pair<String, String>> paymentMethodCombo = new ComboBox<>();
+        // Display name, Enum value pairs
+        paymentMethodCombo.getItems().addAll(
+            new javafx.util.Pair<>("Credit Card", "CREDIT_CARD"),
+            new javafx.util.Pair<>("Debit Card", "DEBIT_CARD"),
+            new javafx.util.Pair<>("PayPal", "PAYPAL"),
+            new javafx.util.Pair<>("UPI", "UPI"),
+            new javafx.util.Pair<>("Net Banking", "NET_BANKING"),
+            new javafx.util.Pair<>("Wallet", "WALLET"),
+            new javafx.util.Pair<>("Cash", "CASH")
+        );
+        // Custom cell factory to show display name
+        paymentMethodCombo.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(javafx.util.Pair<String, String> item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getKey());
+                }
+            }
+        });
+        paymentMethodCombo.setButtonCell(new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(javafx.util.Pair<String, String> item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Credit Card");
+                } else {
+                    setText(item.getKey());
+                }
+            }
+        });
+        paymentMethodCombo.getSelectionModel().select(0);
+        paymentMethodCombo.setStyle("-fx-font-size: 14px; -fx-padding: 8px;");
+
+        // Payment details container
+        VBox paymentDetailsBox = new VBox(10);
+        paymentDetailsBox.setAlignment(Pos.CENTER);
+        paymentDetailsBox.setStyle("-fx-background-color: #f9fafb; -fx-padding: 15px; -fx-background-radius: 8px;");
+
+        ImageView qrView = new ImageView();
+        Label qrLabel = new Label("Scan QR Code for Payment");
+        qrLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
+
+        try {
+            String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PassengerPayment_" + booking.getId();
+            qrView.setImage(new Image(qrUrl, true));
+        } catch (Exception e) {
+            System.err.println("Failed to load QR code.");
+        }
+
+        paymentDetailsBox.getChildren().addAll(qrLabel, qrView);
+
+        // Update payment details based on selected method
+        paymentMethodCombo.setOnAction(e -> {
+            javafx.util.Pair<String, String> selected = paymentMethodCombo.getValue();
+            String selectedMethod = selected != null ? selected.getValue() : "CREDIT_CARD";
+            paymentDetailsBox.getChildren().clear();
+
+            if (selectedMethod.equals("CASH")) {
+                Label cashLabel = new Label("Pay cash to driver");
+                cashLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #10b981; -fx-font-weight: bold;");
+                paymentDetailsBox.getChildren().add(cashLabel);
+            } else if (selectedMethod.equals("UPI")) {
+                Label upiLabel = new Label("Scan UPI QR Code");
+                upiLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
+                paymentDetailsBox.getChildren().addAll(upiLabel, qrView);
+            } else {
+                Label cardLabel = new Label("Processing " + selected.getKey() + " payment...");
+                cardLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #3b82f6;");
+                paymentDetailsBox.getChildren().add(cardLabel);
+            }
+        });
+
+        Button confirmButton = new Button("Confirm Payment");
+        confirmButton.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+        confirmButton.setOnAction(e -> {
+            confirmButton.setDisable(true);
+            confirmButton.setText("Processing...");
+            javafx.util.Pair<String, String> selected = paymentMethodCombo.getValue();
+            String paymentMethodValue = selected != null ? selected.getValue() : "CREDIT_CARD";
+            processPassengerPayment(booking, paymentMethodValue, popupStage);
+        });
+
+        layout.getChildren().addAll(title, routeLabel, fareLabel, paymentMethodLabel, paymentMethodCombo, paymentDetailsBox, confirmButton);
+
+        Scene scene = new Scene(layout, 400, 500);
+        popupStage.setScene(scene);
+        popupStage.show();
+    }
+    
+    private void processPassengerPayment(Booking booking, String paymentMethod, Stage popupStage) {
+        new Thread(() -> {
+            try {
+                // Process payment for the booking with selected method
+                paymentService.processPayment(booking.getId(), booking.getTotalFare(), paymentMethod);
+                
+                Platform.runLater(() -> {
+                    // Show payment status popup
+                    showPaymentStatusPopup(paymentMethod, true, popupStage);
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    System.err.println("Failed to process payment: " + e.getMessage());
+                    // Show payment status popup with failure
+                    showPaymentStatusPopup(paymentMethod, false, popupStage);
+                });
+            }
+        }).start();
+    }
+    
+    private void showPaymentStatusPopup(String paymentMethod, boolean success, Stage originalPopup) {
+        originalPopup.close();
+        
+        Stage statusStage = new Stage();
+        statusStage.initModality(Modality.APPLICATION_MODAL);
+        statusStage.setTitle("Payment Status");
+        
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-padding: 30; -fx-background-color: #ffffff;");
+        
+        Label titleLabel = new Label("Payment Status");
+        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        
+        Label statusLabel;
+        Label detailLabel;
+        Button actionButton;
+        
+        if (success) {
+            statusLabel = new Label("PAYMENT SUCCESSFUL");
+            statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+            
+            detailLabel = new Label("Payment processed via " + paymentMethod + "\nStatus: COMPLETED");
+            detailLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #6b7280;");
+            
+            actionButton = new Button("Continue to Dashboard");
+            actionButton.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+        } else {
+            statusLabel = new Label("PAYMENT FAILED");
+            statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
+            
+            detailLabel = new Label("Payment via " + paymentMethod + " failed\nStatus: FAILED\nPlease try again or use a different payment method");
+            detailLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #6b7280;");
+            
+            actionButton = new Button("Try Again");
+            actionButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+        }
+        
+        // Add payment status icon
+        Label statusIcon = new Label(success ? "SUCCESS" : "FAILED");
+        statusIcon.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: " + (success ? "#10b981" : "#ef4444") + ";");
+        
+        actionButton.setOnAction(e -> {
+            statusStage.close();
+            try {
+                App.setRoot("dashboard");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        });
+        
+        layout.getChildren().addAll(statusIcon, titleLabel, statusLabel, detailLabel, actionButton);
+        
+        Scene scene = new Scene(layout, 400, 350);
+        statusStage.setScene(scene);
+        statusStage.show();
     }
 }

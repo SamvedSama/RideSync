@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.MyRidesController" styleClass="root">
+    <padding>
+        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+    </padding>
+
+    <Label text="My Rides" styleClass="label-header" />
+    
+    <Label text="Select a ride to manage or double-click to open" style="-fx-font-size: 12px; -fx-text-fill: #64748b;" />
+
+    <HBox spacing="15" alignment="CENTER">
+        <Label text="Filter:" style="-fx-font-size: 14px;" />
+        <ComboBox fx:id="filterComboBox" prefWidth="150.0" />
+        <Button text="Refresh" onAction="#refreshRides" styleClass="button-secondary" style="-fx-pref-width: 100;" />
+    </HBox>
+    
+    <!-- Statistics -->
+    <HBox spacing="25" alignment="CENTER" style="-fx-background-color: #1e293b; -fx-padding: 15px; -fx-background-radius: 8px;">
+        <Label fx:id="totalRidesLabel" text="Total: 0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #38bdf8;" />
+        <Label fx:id="activeRidesLabel" text="Active: 0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #f59e0b;" />
+        <Label fx:id="completedRidesLabel" text="Completed: 0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #10b981;" />
+        <Label fx:id="cancelledRidesLabel" text="Cancelled: 0" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #ef4444;" />
+    </HBox>
+    
+    <!-- Status Label -->
+    <Label fx:id="statusLabel" text="Loading your rides..." style="-fx-font-size: 12px; -fx-text-fill: #f59e0b;" />
+    
+    <!-- Rides List -->
+    <ListView fx:id="ridesListView" styleClass="card" VBox.vgrow="ALWAYS" prefHeight="400" maxHeight="500" prefWidth="700" />
+    
+    <!-- Action Buttons -->
+    <HBox spacing="15" alignment="CENTER">
+        <Button fx:id="manageButton" text="Manage Selected Ride" onAction="#handleManageRide" styleClass="button-success" style="-fx-pref-width: 180;" disable="true" />
+        <Button text="Back to Dashboard" onAction="#goBack" styleClass="button-secondary" style="-fx-pref-width: 150;" />
+    </HBox>
+
+</VBox>

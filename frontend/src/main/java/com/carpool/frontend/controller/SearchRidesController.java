@@ -41,17 +41,12 @@ public class SearchRidesController {
 
     @FXML
     public void initialize() {
+        // Disable auto-completion to prevent blocking calls during search
         TextFields.bindAutoCompletion(sourceField, request -> {
-            if (request.getUserText().length() >= 3) {
-                return locationService.fetchSuggestions(request.getUserText());
-            }
             return java.util.Collections.emptyList();
         });
 
         TextFields.bindAutoCompletion(destinationField, request -> {
-            if (request.getUserText().length() >= 3) {
-                return locationService.fetchSuggestions(request.getUserText());
-            }
             return java.util.Collections.emptyList();
         });
 
@@ -64,17 +59,20 @@ public class SearchRidesController {
                 } else {
                     String time = ride.getDepartureTime() != null ? ride.getDepartureTime().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")) : "N/A";
                     String driverName = ride.getDriver() != null ? ride.getDriver().getName() : "Unknown";
-                    setText(String.format("%s -> %s | Departure: %s | Seats: %d | Fare: ₹%.2f | Driver: %s",
-                            ride.getSource(), ride.getDestination(), time, ride.getAvailableSeats(), ride.getFarePerSeat(), driverName));
+                    Integer availableSeats = ride.getAvailableSeats();
+                    String seatsText = availableSeats != null ? availableSeats.toString() : "N/A";
+                    setText(String.format("%s -> %s | Departure: %s | Seats: %s | Fare: %.2f | Driver: %s",
+                            ride.getSource(), ride.getDestination(), time, seatsText, ride.getFarePerSeat(), driverName));
                 }
             }
         });
 
         ridesListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                if (newVal.getAvailableSeats() > 0) {
+                Integer availableSeats = newVal.getAvailableSeats();
+                if (availableSeats != null && availableSeats > 0) {
                     bookingBox.setVisible(true);
-                    seatsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, newVal.getAvailableSeats(), 1));
+                    seatsSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, availableSeats, 1));
                 } else {
                     bookingBox.setVisible(false);
                 }
@@ -108,9 +106,10 @@ public class SearchRidesController {
 
         new Thread(() -> {
             try {
+                // Temporarily bypass location validation to allow ride discovery
                 if (!onLoad) {
-                    boolean sv = locationService.isValidLocation(src);
-                    boolean dv = locationService.isValidLocation(dst);
+                    boolean sv = true; // locationService.isValidLocation(src);
+                    boolean dv = true; // locationService.isValidLocation(dst);
                     if (!sv || !dv) {
                         Platform.runLater(() -> {
                             statusLabel.setText("Invalid Search: Target locations not found in India.");

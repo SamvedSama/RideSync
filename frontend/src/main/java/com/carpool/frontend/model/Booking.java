@@ -66,4 +66,7 @@ public class Booking {
     
     public RideStatus getRideStatus() { return rideStatus; }
     public void setRideStatus(RideStatus rideStatus) { this.rideStatus = rideStatus; }
+    
+    // Convenience method for passenger
+    public String getPassenger() { return riderName; }
 }

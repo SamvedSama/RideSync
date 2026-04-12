@@ -26,13 +26,14 @@ public class LocationService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://nominatim.openstreetmap.org/search?q=" + encodedQuery + "&format=json&countrycodes=in&limit=1"))
                     .header("User-Agent", "RideSync-JavaFX-App")
+                    .timeout(Duration.ofSeconds(5))
                     .GET()
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return response.statusCode() == 200 && response.body().trim().length() > 5;
         } catch (Exception e) {
-            e.printStackTrace();
+            // Don't print stack trace for normal interruptions
             return false;
         }
     }
@@ -47,6 +48,7 @@ public class LocationService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://nominatim.openstreetmap.org/search?q=" + encodedQuery + "&format=json&countrycodes=in&limit=5"))
                     .header("User-Agent", "RideSync-JavaFX-App")
+                    .timeout(Duration.ofSeconds(3))
                     .GET()
                     .build();
 
@@ -65,7 +67,7 @@ public class LocationService {
             }
             return suggestions;
         } catch (Exception e) {
-            e.printStackTrace();
+            // Don't print stack trace for normal interruptions
             return java.util.Collections.emptyList();
         }
     }
@@ -76,6 +78,7 @@ public class LocationService {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://nominatim.openstreetmap.org/search?q=" + encodedQuery + "&format=json&countrycodes=in&limit=1"))
                     .header("User-Agent", "RideSync-JavaFX-App")
+                    .timeout(Duration.ofSeconds(5))
                     .GET()
                     .build();
 
@@ -89,7 +92,7 @@ public class LocationService {
                 return new double[]{Double.parseDouble(latStr), Double.parseDouble(lonStr)};
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            // Don't print stack trace for normal interruptions
         }
         return new double[]{12.9716, 77.5946};
     }

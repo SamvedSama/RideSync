@@ -24,4 +24,7 @@ public class AuthResponse {
     public void setRole(String role) { this.role = role; }
     public boolean isBanned() { return banned; }
     public void setBanned(boolean banned) { this.banned = banned; }
+    
+    // Convenience method for compatibility
+    public Long getId() { return userId; }
 }

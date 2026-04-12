@@ -73,4 +73,19 @@ public class BookingService {
         }
         throw new RuntimeException("Failed to start ride with OTP: " + response.body());
     }
+    
+    public List<Booking> getBookingsForRide(Long rideId) throws Exception {
+        String token = SessionManager.getToken();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL + "/ride/" + rideId))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+                
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return mapper.readValue(response.body(), new TypeReference<List<Booking>>(){});
+        }
+        throw new RuntimeException("Failed to fetch bookings for ride: " + response.body());
+    }
 }

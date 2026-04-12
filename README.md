@@ -1,36 +1,103 @@
-# RideSync – College Carpool Platform
+![alt text](image.png)# RideSync - College Ride Sharing System
 
-A full-stack carpooling application with Spring Boot backend and React frontend.
+A comprehensive ride-sharing and carpooling system built with Java technologies for college campus transportation.
+
+## Technology Stack
+
+### Backend
+- **Framework:** Spring Boot (MVC Architecture)
+- **Language:** Java 17+
+- **Database:** H2 (Development) / PostgreSQL (Production)
+- **ORM:** Spring Data JPA
+- **Build Tool:** Maven
+
+### Frontend
+- **Framework:** JavaFX 17+
+- **UI Components:** JavaFX Controls, CSS Styling
+- **Charts:** JavaFX Charts for analytics
+
+### Additional Technologies
+- **Routing Algorithm:** Dijkstra's Algorithm
+- **Map Data:** OpenStreetMap (OSM) format
+- **Design Patterns:** Singleton, Factory, Observer, Strategy, etc.
 
 ## Project Structure
+
 ```
-ridesync_final/
-├── backend/    ← Spring Boot 3.2 + JWT + MySQL
-└── frontend/   ← React 18 + Vite + Tailwind CSS
+RideSync/
+├── src/
+│   ├── main/
+│   │   ├── java/com/ridesync/
+│   │   │   ├── controller/     # Spring MVC Controllers
+│   │   │   ├── service/        # Business Logic
+│   │   │   ├── repository/     # Data Access Layer
+│   │   │   ├── model/          # Entity Classes
+│   │   │   ├── dto/            # Data Transfer Objects
+│   │   │   ├── algorithm/      # Routing Algorithms
+│   │   │   ├── pattern/        # Design Patterns
+│   │   │   └── config/         # Configuration
+│   │   └── resources/
+│   │       ├── application.yml
+│   │       └── static/
+│   └── test/
+├── frontend/
+│   ├── src/main/java/com/ridesync/ui/
+│   │   ├── controller/     # JavaFX Controllers
+│   │   ├── view/           # FXML Views
+│   │   ├── model/          # UI Models
+│   │   └── util/           # UI Utilities
+│   └── resources/
+│       ├── fxml/           # FXML Files
+│       ├── css/            # Stylesheets
+│       └── images/         # UI Assets
+└── docs/                   # UML Diagrams
 ```
+
+## Major Features (4 Use Cases)
+
+1. **User Registration & Profile Management**
+   - Driver and Passenger registration
+   - Profile verification
+   - Vehicle registration for drivers
+
+2. **Ride Creation & Matching**
+   - Create ride offers (Driver)
+   - Search and book rides (Passenger)
+   - Automatic ride matching algorithm
+
+3. **Real-time Ride Tracking**
+   - Live ride status updates
+   - Route visualization
+   - Estimated arrival times
+
+4. **Payment & Rating System**
+   - Fare calculation
+   - Payment processing simulation
+   - Driver and passenger ratings
+
+## Minor Features (4 Use Cases)
+
+1. **Notification System**
+2. **Ride History & Analytics**
+3. **Emergency Contact System**
+4. **Preferences & Settings**
 
 ## Quick Start
 
 ### Prerequisites
-- Java 17+, Maven 3.8+
-- MySQL 8+ on localhost:3306
-- Node.js 18+
+- Java 17+
+- Maven 3.6+
+- JavaFX SDK 17+
 
 ### 1. Start the Backend
 ```bash
-cd backend
-# Edit src/main/resources/application.yml with your MySQL credentials
 mvn spring-boot:run
 # → Starts on http://localhost:8080
-# → Creates ridesync_db automatically
 ```
 
-### 2. Start the Frontend
+### 2. Start the JavaFX Frontend
 ```bash
-cd frontend
-npm install
-npm run dev
-# → Opens at http://localhost:5173
+mvn javafx:run
 ```
 
 ### 3. Create your first Admin
