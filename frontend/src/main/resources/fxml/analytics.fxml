@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.CategoryAxis?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.AnalyticsController">
+   <children>
+      <VBox layoutX="20.0" layoutY="20.0" spacing="20.0">
+         <children>
+            <Label text="Ride Analytics" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+            
+            <HBox spacing="20.0">
+               <children>
+                  <Label text="Period:" style="-fx-font-size: 14px;" />
+                  <ComboBox fx:id="periodComboBox" prefWidth="150.0" />
+                  <Button text="Refresh" onAction="#refreshData" prefWidth="100.0" />
+                  <Button text="Export Report" onAction="#exportReport" prefWidth="120.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+               </children>
+            </HBox>
+            
+            <HBox spacing="30.0">
+               <children>
+                  <VBox spacing="10.0" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 15;">
+                     <children>
+                        <Label fx:id="totalRidesLabel" text="Total Rides: 0" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                        <Label fx:id="totalEarningsLabel" text="Total Earnings: $0.00" style="-fx-font-size: 14px;" />
+                        <Label fx:id="averageRatingLabel" text="Average Rating: 0.0/5.0" style="-fx-font-size: 14px;" />
+                        <Label fx:id="completionRateLabel" text="Completion Rate: 0%" style="-fx-font-size: 14px;" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            
+            <VBox spacing="15.0">
+               <children>
+                  <Label text="Monthly Ride Statistics" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                  <BarChart fx:id="monthlyRidesChart" prefWidth="700.0" prefHeight="300.0">
+                     <xAxis>
+                        <CategoryAxis label="Month" />
+                     </xAxis>
+                     <yAxis>
+                        <NumberAxis label="Number of Rides" />
+                     </yAxis>
+                  </BarChart>
+               </children>
+            </VBox>
+            
+            <HBox spacing="30.0">
+               <children>
+                  <VBox spacing="15.0">
+                     <children>
+                        <Label text="Popular Routes" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                        <PieChart fx:id="routeDistributionChart" prefWidth="350.0" prefHeight="250.0" />
+                     </children>
+                  </VBox>
+                  
+                  <VBox spacing="15.0">
+                     <children>
+                        <Label text="Earnings Trend" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                        <LineChart fx:id="earningsTrendChart" prefWidth="350.0" prefHeight="250.0">
+                           <xAxis>
+                              <CategoryAxis label="Month" />
+                           </xAxis>
+                           <yAxis>
+                              <NumberAxis label="Earnings ($)" />
+                           </yAxis>
+                        </LineChart>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            
+            <Button text="Back to Dashboard" onAction="#goBack" prefWidth="150.0" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

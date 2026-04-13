@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Priority?>
+
+<VBox alignment="CENTER" spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.MapController" styleClass="root">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="🔙 Dashboard" styleClass="button-secondary" />
+        <Label text="Live Ride Tracker" styleClass="label-header" />
+    </HBox>
+    
+    <Label fx:id="statusLabel" text="Initializing MapEngine..." textFill="#64748b" style="-fx-font-style: italic;" />
+
+    <StackPane VBox.vgrow="ALWAYS">
+        <WebView fx:id="webView" />
+        <Button fx:id="paymentButton" text="Payment / End Ride" onAction="#handlePayment" styleClass="button-success" visible="false" StackPane.alignment="TOP_RIGHT" style="-fx-margin: 20; -fx-translate-y: 20; -fx-translate-x: -20; -fx-font-weight: bold; -fx-font-size: 16px;" />
+    </StackPane>
+
+</VBox>

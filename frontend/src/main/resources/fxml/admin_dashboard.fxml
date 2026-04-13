@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.carpool.frontend.controller.AdminDashboardController" styleClass="root">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Admin Console" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #8b5cf6;" />
+        <Label fx:id="adminWelcomeLabel" text="Welcome Admin" style="-fx-font-size: 14px; -fx-text-fill: #64748b;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button mnemonicParsing="false" onAction="#goToDashboard" text="Dashboard" style="-fx-background-color: #6b7280; -fx-text-fill: white; -fx-pref-width: 120;" />
+        <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-pref-width: 120;" />
+    </HBox>
+
+    <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <!-- Users Tab -->
+        <Tab text="Users" id="usersTab">
+            <VBox spacing="10">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button fx:id="banButton" mnemonicParsing="false" onAction="#banSelectedUser" text="Ban User" style="-fx-background-color: #ef4444; -fx-text-fill: white;" />
+                    <Button fx:id="unbanButton" mnemonicParsing="false" onAction="#unbanSelectedUser" text="Unban User" style="-fx-background-color: #10b981; -fx-text-fill: white;" />
+                    <Button mnemonicParsing="false" onAction="#changeUserRole" text="Change Role" style="-fx-background-color: #f59e0b; -fx-text-fill: white;" />
+                    <Button mnemonicParsing="false" onAction="#loadUsers" text="Refresh" style="-fx-background-color: #3b82f6; -fx-text-fill: white;" />
+                </HBox>
+                <TableView fx:id="usersTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="userIdColumn" text="ID" prefWidth="80" />
+                        <TableColumn fx:id="userNameColumn" text="Name" prefWidth="150" />
+                        <TableColumn fx:id="userEmailColumn" text="Email" prefWidth="200" />
+                        <TableColumn fx:id="userRoleColumn" text="Role" prefWidth="100" />
+                        <TableColumn fx:id="userBannedColumn" text="Banned" prefWidth="80" />
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Rides Tab -->
+        <Tab text="Rides" id="ridesTab">
+            <VBox spacing="10">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button mnemonicParsing="false" onAction="#cancelSelectedRide" text="Cancel Ride" style="-fx-background-color: #ef4444; -fx-text-fill: white;" />
+                    <Button mnemonicParsing="false" onAction="#loadRides" text="Refresh" style="-fx-background-color: #3b82f6; -fx-text-fill: white;" />
+                </HBox>
+                <TableView fx:id="ridesTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="rideIdColumn" text="ID" prefWidth="80" />
+                        <TableColumn fx:id="rideSourceColumn" text="Source" prefWidth="150" />
+                        <TableColumn fx:id="rideDestinationColumn" text="Destination" prefWidth="150" />
+                        <TableColumn fx:id="rideStatusColumn" text="Status" prefWidth="120" />
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+
+        <!-- Audit Log Tab -->
+        <Tab text="Audit Log" id="auditTab">
+            <VBox spacing="10">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button mnemonicParsing="false" onAction="#loadAuditLog" text="Refresh" style="-fx-background-color: #3b82f6; -fx-text-fill: white;" />
+                </HBox>
+                <TableView fx:id="auditTableView" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="auditActionColumn" text="Action" prefWidth="150" />
+                        <TableColumn fx:id="auditTargetColumn" text="Target" prefWidth="150" />
+                        <TableColumn fx:id="auditNotesColumn" text="Notes" prefWidth="400" />
+                    </columns>
+                </TableView>
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox>

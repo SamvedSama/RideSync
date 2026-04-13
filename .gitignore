@@ -1,0 +1,57 @@
+# ── Java / Maven ──────────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.tmp
+
+# Maven wrapper
+.mvn/
+mvnw
+mvnw.cmd
+
+# ── Spring Boot ───────────────────────────────────────────────────────────────
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-prod.yml
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+dist/
+frontend/dist/
+.vite/
+*.local
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.suo
+*.user
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ── Test reports ──────────────────────────────────────────────────────────────
+backend/target/surefire-reports/
+backend/target/site/
+
+# ── Coverage ──────────────────────────────────────────────────────────────────
+backend/target/jacoco.exec
+backend/target/
+backend/target/site/jacoco/
