@@ -20,6 +20,9 @@ public class Booking {
     private LocalDateTime otpGeneratedAt;
     private LocalDateTime waitingStartedAt;
     private RideStatus rideStatus;
+    private String paymentStatus;
+    private String paymentMethod;
+    private Double paymentAmount;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -66,6 +69,15 @@ public class Booking {
     
     public RideStatus getRideStatus() { return rideStatus; }
     public void setRideStatus(RideStatus rideStatus) { this.rideStatus = rideStatus; }
+    
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    
+    public Double getPaymentAmount() { return paymentAmount; }
+    public void setPaymentAmount(Double paymentAmount) { this.paymentAmount = paymentAmount; }
     
     // Convenience method for passenger
     public String getPassenger() { return riderName; }

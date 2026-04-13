@@ -27,6 +27,7 @@ public class DashboardController {
     @FXML private Label currentRideStatusLabel;
     @FXML private Label currentRideDetailsLabel;
     @FXML private Button viewRideButton;
+    @FXML private Button adminDashboardButton;
 
     private boolean hasActiveRide = false;
     private Booking currentBooking = null;
@@ -39,20 +40,29 @@ public class DashboardController {
             String role = SessionManager.getCurrentUser().getRole();
             String roleText = "PASSENGER".equalsIgnoreCase(role) ? "Passenger (can also drive)" : role;
             welcomeLabel.setText("Welcome, " + SessionManager.getCurrentUser().getName() + "! (" + roleText + ")");
-            
+
+            // Show admin dashboard button for admin users
+            if ("ADMIN".equalsIgnoreCase(role)) {
+                adminDashboardButton.setVisible(true);
+                adminDashboardButton.setManaged(true);
+            } else {
+                adminDashboardButton.setVisible(false);
+                adminDashboardButton.setManaged(false);
+            }
+
             if ("DRIVER".equalsIgnoreCase(role) || "PASSENGER".equalsIgnoreCase(role)) {
                 driverMenu.setVisible(true);
                 driverMenu.setManaged(true);
                 riderMenu.setVisible(false);
                 riderMenu.setManaged(false);
-                
+
                 checkActiveRide();
             } else {
                 riderMenu.setVisible(true);
                 riderMenu.setManaged(true);
                 driverMenu.setVisible(false);
                 driverMenu.setManaged(false);
-                
+
                 // Start monitoring passenger ride status
                 startPassengerRideStatusMonitoring();
             }
@@ -90,10 +100,15 @@ public class DashboardController {
     }
 
     @FXML
+    private void goToAdminDashboard() throws IOException {
+        App.setRoot("admin_dashboard");
+    }
+
+    @FXML
     private void goToProfile() throws IOException {
         App.setRoot("profile");
     }
-    
+
     @FXML
     private void goToSearchRides() throws IOException {
         App.setRoot("search_rides");
@@ -153,6 +168,7 @@ public class DashboardController {
                 List<Booking> myBookings = bookingService.getMyBookings();
                 Booking activeBooking = myBookings.stream()
                     .filter(b -> b.getStatus().toString().equals("CONFIRMED") ||
+                                b.getStatus().toString().equals("PAID") ||
                                 b.getStatus().toString().equals("IN_PROGRESS") ||
                                 b.getStatus().toString().equals("COMPLETED"))
                     .findFirst().orElse(null);
@@ -176,35 +192,59 @@ public class DashboardController {
         String statusText = "";
         String detailsText = "";
         String statusColor = "";
+        String paymentInfo = "";
+        
+        // Build payment status info
+        if (booking.getPaymentStatus() != null) {
+            String paymentStatusColor = booking.getPaymentStatus().equals("COMPLETED") ? "#10b981" : 
+                                       booking.getPaymentStatus().equals("FAILED") ? "#ef4444" : "#f59e0b";
+            String paymentStatusText = booking.getPaymentStatus().equals("PROCESSING") ? "Waiting for confirmation" : 
+                                      booking.getPaymentStatus();
+            paymentInfo = String.format("\nPayment: %s (%s)", 
+                paymentStatusText,
+                booking.getPaymentMethod() != null ? booking.getPaymentMethod() : "N/A");
+            if (booking.getPaymentAmount() != null) {
+                paymentInfo += String.format(" - $%.2f", booking.getPaymentAmount());
+            }
+        }
         
         switch (booking.getStatus().toString()) {
             case "CONFIRMED":
                 statusText = "Ride Confirmed";
-                detailsText = String.format("%s -> %s\nDeparture: %s\nSeats: %d", 
+                detailsText = String.format("%s -> %s\nDeparture: %s\nSeats: %d\nFare: $%.2f%s", 
                     booking.getSource(), booking.getDestination(),
                     booking.getOtpGeneratedAt() != null ? 
                         booking.getOtpGeneratedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")) : "N/A",
-                    booking.getSeatsBooked());
+                    booking.getSeatsBooked(), booking.getTotalFare(), paymentInfo);
+                statusColor = "#10b981"; // Green
+                break;
+            case "PAID":
+                statusText = "Payment Completed";
+                detailsText = String.format("%s -> %s\nDeparture: %s\nSeats: %d\nFare: $%.2f%s\nWaiting for ride to start", 
+                    booking.getSource(), booking.getDestination(),
+                    booking.getOtpGeneratedAt() != null ? 
+                        booking.getOtpGeneratedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")) : "N/A",
+                    booking.getSeatsBooked(), booking.getTotalFare(), paymentInfo);
                 statusColor = "#10b981"; // Green
                 break;
             case "IN_PROGRESS":
                 statusText = "Ride In Progress";
-                detailsText = String.format("%s -> %s\nStarted at: %s\nSeats: %d", 
+                detailsText = String.format("%s -> %s\nStarted at: %s\nSeats: %d\nFare: $%.2f%s", 
                     booking.getSource(), booking.getDestination(),
                     booking.getWaitingStartedAt() != null ? 
                         booking.getWaitingStartedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")) : "N/A",
-                    booking.getSeatsBooked());
+                    booking.getSeatsBooked(), booking.getTotalFare(), paymentInfo);
                 statusColor = "#f59e0b"; // Orange
                 break;
             case "COMPLETED":
-                statusText = "Ride Completed - Payment Required";
-                detailsText = String.format("%s -> %s\nPlease complete payment: $%.2f", 
-                    booking.getSource(), booking.getDestination(), booking.getTotalFare());
-                statusColor = "#f59e0b"; // Orange for payment required
+                statusText = "Ride Completed";
+                detailsText = String.format("%s -> %s\nFare: $%.2f%s\nRide completed successfully", 
+                    booking.getSource(), booking.getDestination(), booking.getTotalFare(), paymentInfo);
+                statusColor = "#10b981"; // Green
                 break;
             case "CANCELLED":
                 statusText = "Ride Cancelled";
-                detailsText = String.format("%s -> %s\nRide was cancelled by driver", 
+                detailsText = String.format("%s -> %s\nRide was cancelled", 
                     booking.getSource(), booking.getDestination());
                 statusColor = "#ef4444"; // Red
                 break;
@@ -219,14 +259,23 @@ public class DashboardController {
         currentRideDetailsLabel.setText(detailsText);
         currentRideDetailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
         
-        // Show appropriate buttons based on status
-        if (booking.getStatus().toString().equals("CONFIRMED") || 
-            booking.getStatus().toString().equals("IN_PROGRESS")) {
+        // Show appropriate buttons based on status and payment status
+        boolean needsPayment = booking.getPaymentStatus() == null || 
+                            booking.getPaymentStatus().equals("FAILED");
+        
+        if (needsPayment) {
+            viewRideButton.setVisible(true);
+            viewRideButton.setText(booking.getPaymentStatus() != null && 
+                                   booking.getPaymentStatus().equals("FAILED") ? "Retry Payment" : "Pay Now");
+        } else if (booking.getPaymentStatus() != null && booking.getPaymentStatus().equals("PROCESSING")) {
+            viewRideButton.setVisible(true);
+            viewRideButton.setText("Payment Pending");
+            viewRideButton.setDisable(true);
+        } else if (booking.getStatus().toString().equals("PAID") || 
+                   booking.getStatus().toString().equals("IN_PROGRESS")) {
             viewRideButton.setVisible(true);
             viewRideButton.setText("View Details");
-        } else if (booking.getStatus().toString().equals("COMPLETED")) {
-            viewRideButton.setVisible(true);
-            viewRideButton.setText("Pay Now");
+            viewRideButton.setDisable(false);
         } else {
             viewRideButton.setVisible(false);
         }
@@ -243,8 +292,12 @@ public class DashboardController {
     @FXML
     private void viewCurrentRide() throws IOException {
         if (currentBooking != null) {
-            if (currentBooking.getStatus().toString().equals("COMPLETED")) {
-                // Show payment popup for completed rides
+            boolean needsPayment = currentBooking.getPaymentStatus() == null || 
+                                currentBooking.getPaymentStatus().equals("FAILED") ||
+                                currentBooking.getPaymentStatus().equals("PROCESSING");
+            
+            if (needsPayment) {
+                // Show payment popup for rides that need payment
                 showPaymentPopup();
             } else {
                 // For now, show search rides since ride_details doesn't exist

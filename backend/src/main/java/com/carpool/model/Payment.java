@@ -1,5 +1,7 @@
 package com.carpool.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +15,7 @@ public class Payment {
     
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
+    @JsonIgnore
     private Booking booking;
     
     @Column(nullable = false)
@@ -22,7 +25,7 @@ public class Payment {
     @Column(nullable = false)
     private PaymentStatus status;
     
-    @Column(nullable = false)
+    @Column(name = "method", nullable = false)
     private String paymentMethod;
     
     @Column(nullable = false)
@@ -48,6 +51,9 @@ public class Payment {
     
     public Booking getBooking() { return booking; }
     public void setBooking(Booking booking) { this.booking = booking; }
+
+    @JsonProperty("bookingId")
+    public Long getBookingId() { return booking != null ? booking.getId() : null; }
     
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }

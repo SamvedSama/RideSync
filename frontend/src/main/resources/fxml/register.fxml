@@ -60,6 +60,7 @@
                 <FXCollections fx:factory="observableArrayList">
                     <String fx:value="RIDER"/>
                     <String fx:value="DRIVER"/>
+                    <String fx:value="ADMIN"/>
                 </FXCollections>
             </items>
         </ComboBox>

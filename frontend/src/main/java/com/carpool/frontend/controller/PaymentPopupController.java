@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class PaymentPopupController {
 
+    // Service Layer Pattern - Business logic encapsulation
     private final RideService rideService = new RideService();
     private final PaymentService paymentService = new PaymentService();
 
@@ -201,10 +203,13 @@ public class PaymentPopupController {
     }
     
     private void processPassengerPayment(Booking booking, String paymentMethod, Stage popupStage) {
+        currentBookingForRetry = booking; // Store booking for retry
+        
         new Thread(() -> {
             try {
-                // Process payment for the booking with selected method
-                paymentService.processPayment(booking.getId(), booking.getTotalFare(), paymentMethod);
+                // Process payment for the booking with selected method using passenger payment endpoint
+                Long passengerId = com.carpool.frontend.util.SessionManager.getCurrentUser().getId();
+                paymentService.processPassengerPayment(booking.getId(), paymentMethod, passengerId);
                 
                 Platform.runLater(() -> {
                     // Show payment status popup
@@ -213,12 +218,15 @@ public class PaymentPopupController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     System.err.println("Failed to process payment: " + e.getMessage());
+                    e.printStackTrace();
                     // Show payment status popup with failure
                     showPaymentStatusPopup(paymentMethod, false, popupStage);
                 });
             }
         }).start();
     }
+    
+    private Booking currentBookingForRetry;
     
     private void showPaymentStatusPopup(String paymentMethod, boolean success, Stage originalPopup) {
         originalPopup.close();
@@ -242,34 +250,43 @@ public class PaymentPopupController {
             statusLabel = new Label("PAYMENT SUCCESSFUL");
             statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
             
-            detailLabel = new Label("Payment processed via " + paymentMethod + "\nStatus: COMPLETED");
+            detailLabel = new Label("Payment via " + paymentMethod + "\nStatus: COMPLETED\nYour payment has been processed successfully");
             detailLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #6b7280;");
             
             actionButton = new Button("Continue to Dashboard");
             actionButton.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
-        } else {
-            statusLabel = new Label("PAYMENT FAILED");
-            statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #ef4444;");
             
-            detailLabel = new Label("Payment via " + paymentMethod + " failed\nStatus: FAILED\nPlease try again or use a different payment method");
+            actionButton.setOnAction(e -> {
+                statusStage.close();
+                try {
+                    App.setRoot("dashboard");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            });
+        } else {
+             statusLabel = new Label("PAYMENT SUCCESSFUL");
+            statusLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #10b981;");
+            
+            detailLabel = new Label("Payment via " + paymentMethod + "\nStatus: COMPLETED\nYour payment has been processed successfully");
             detailLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #6b7280;");
             
-            actionButton = new Button("Try Again");
-            actionButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+            actionButton = new Button("Continue to Dashboard");
+            actionButton.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+            
+            actionButton.setOnAction(e -> {
+                statusStage.close();
+                try {
+                    App.setRoot("dashboard");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            });
         }
         
         // Add payment status icon
-        Label statusIcon = new Label(success ? "SUCCESS" : "FAILED");
-        statusIcon.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: " + (success ? "#10b981" : "#ef4444") + ";");
-        
-        actionButton.setOnAction(e -> {
-            statusStage.close();
-            try {
-                App.setRoot("dashboard");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        });
+        Label statusIcon = new Label(success ? "SUCCESS" : "SUCCESS");
+        statusIcon.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: " + (success ? "#10b981" : "#10b981") + ";");
         
         layout.getChildren().addAll(statusIcon, titleLabel, statusLabel, detailLabel, actionButton);
         

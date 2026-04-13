@@ -47,6 +47,7 @@ public class Ride {
     private RideStatus status;
 
     @ManyToOne(optional = false)
+    @JsonIgnore
     private User driver;
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -399,13 +399,29 @@ public class ManageRideController {
         closeButton.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
         closeButton.setOnAction(e -> statusStage.close());
         
-        layout.getChildren().addAll(titleLabel, routeLabel, loadingLabel, paymentDetailsBox, closeButton);
+        Button refreshButton = new Button("Refresh");
+        refreshButton.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20;");
+        refreshButton.setOnAction(e -> {
+            layout.getChildren().add(loadingLabel);
+            paymentDetailsBox.getChildren().clear();
+            loadPaymentData(paymentDetailsBox, layout, loadingLabel, statusStage);
+        });
+        
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(refreshButton, closeButton);
+        
+        layout.getChildren().addAll(titleLabel, routeLabel, loadingLabel, paymentDetailsBox, buttonBox);
         
         Scene scene = new Scene(layout, 500, 600);
         statusStage.setScene(scene);
         statusStage.show();
         
         // Load payment data asynchronously
+        loadPaymentData(paymentDetailsBox, layout, loadingLabel, statusStage);
+    }
+    
+    private void loadPaymentData(VBox paymentDetailsBox, VBox layout, Label loadingLabel, Stage statusStage) {
         new Thread(() -> {
             try {
                 List<com.carpool.frontend.model.Payment> payments = new com.carpool.frontend.service.PaymentService().getPaymentsForRide(currentRide.getId());
@@ -424,6 +440,7 @@ public class ManageRideController {
                         
                         double totalAmount = 0;
                         int completedPayments = 0;
+                        int pendingPayments = 0;
                         
                         for (com.carpool.frontend.model.Payment payment : payments) {
                             VBox paymentCard = new VBox(8);
@@ -436,18 +453,43 @@ public class ManageRideController {
                             Label amountLabel = new Label("Amount: ₹" + String.format("%.2f", payment.getAmount()));
                             amountLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #10b981; -fx-font-weight: bold;");
                             
-                            Label statusLabel = new Label("Status: " + payment.getStatus());
-                            statusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + 
-                                (payment.getStatus().toString().equals("COMPLETED") ? "#10b981" : "#f59e0b") + "; -fx-font-weight: 500;");
+                            String statusText = payment.getStatus() != null ? payment.getStatus().toString() : "UNKNOWN";
+                            Label statusLabel = new Label("Status: " + statusText);
+                            String statusColor = statusText.equals("COMPLETED") ? "#10b981" : 
+                                              statusText.equals("PROCESSING") ? "#f59e0b" : "#ef4444";
+                            statusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + statusColor + "; -fx-font-weight: 500;");
                             
                             Label methodLabel = new Label("Method: " + (payment.getPaymentMethod() != null ? payment.getPaymentMethod() : "N/A"));
                             methodLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
                             
                             paymentCard.getChildren().addAll(passengerLabel, amountLabel, statusLabel, methodLabel);
+                            
+                            // Add confirm/reject buttons for pending payments
+                            if (statusText.equals("PROCESSING")) {
+                                HBox actionButtons = new HBox(10);
+                                actionButtons.setAlignment(Pos.CENTER);
+                                
+                                Button confirmButton = new Button("Confirm");
+                                confirmButton.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16;");
+                                confirmButton.setOnAction(e -> {
+                                    handleConfirmPayment(payment.getId(), statusStage);
+                                });
+                                
+                                Button rejectButton = new Button("Reject");
+                                rejectButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16;");
+                                rejectButton.setOnAction(e -> {
+                                    handleRejectPayment(payment.getId(), statusStage);
+                                });
+                                
+                                actionButtons.getChildren().addAll(confirmButton, rejectButton);
+                                paymentCard.getChildren().add(actionButtons);
+                                pendingPayments++;
+                            }
+                            
                             paymentDetailsBox.getChildren().add(paymentCard);
                             
                             totalAmount += payment.getAmount();
-                            if (payment.getStatus().toString().equals("COMPLETED")) {
+                            if (statusText.equals("COMPLETED")) {
                                 completedPayments++;
                             }
                         }
@@ -463,7 +505,10 @@ public class ManageRideController {
                         Label completedLabel = new Label("Completed: " + completedPayments + "/" + payments.size());
                         completedLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #10b981; -fx-font-weight: 600;");
                         
-                        summaryBox.getChildren().addAll(totalLabel, completedLabel);
+                        Label pendingLabel = new Label("Pending: " + pendingPayments);
+                        pendingLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #f59e0b; -fx-font-weight: 600;");
+                        
+                        summaryBox.getChildren().addAll(totalLabel, completedLabel, pendingLabel);
                         paymentDetailsBox.getChildren().add(summaryBox);
                     }
                     
@@ -477,6 +522,44 @@ public class ManageRideController {
                     errorLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #ef4444; -fx-font-style: italic;");
                     paymentDetailsBox.getChildren().add(errorLabel);
                     layout.getChildren().remove(loadingLabel);
+                });
+            }
+        }).start();
+    }
+    
+    private void handleConfirmPayment(Long paymentId, Stage statusStage) {
+        new Thread(() -> {
+            try {
+                new com.carpool.frontend.service.PaymentService().confirmPayment(paymentId);
+                Platform.runLater(() -> {
+                    actionStatusLabel.setText("Payment confirmed successfully!");
+                    actionStatusLabel.setStyle("-fx-text-fill: #10b981;");
+                    statusStage.close();
+                    loadBookingsForRide(currentRide.getId());
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    actionStatusLabel.setText("Error confirming payment: " + e.getMessage());
+                    actionStatusLabel.setStyle("-fx-text-fill: #ef4444;");
+                });
+            }
+        }).start();
+    }
+    
+    private void handleRejectPayment(Long paymentId, Stage statusStage) {
+        new Thread(() -> {
+            try {
+                new com.carpool.frontend.service.PaymentService().rejectPayment(paymentId);
+                Platform.runLater(() -> {
+                    actionStatusLabel.setText("Payment rejected.");
+                    actionStatusLabel.setStyle("-fx-text-fill: #ef4444;");
+                    statusStage.close();
+                    loadBookingsForRide(currentRide.getId());
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    actionStatusLabel.setText("Error rejecting payment: " + e.getMessage());
+                    actionStatusLabel.setStyle("-fx-text-fill: #ef4444;");
                 });
             }
         }).start();

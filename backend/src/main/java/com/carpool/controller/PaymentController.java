@@ -36,7 +36,7 @@ public class PaymentController {
     }
 
     @PostMapping("/passenger/pay")
-    @PreAuthorize("hasRole('PASSENGER')")
+    @PreAuthorize("hasRole('PASSENGER') or hasRole('RIDER')")
     public ResponseEntity<Payment> passengerPayment(
             @RequestParam Long bookingId,
             @RequestParam PaymentMethod paymentMethod,
@@ -46,6 +46,43 @@ public class PaymentController {
             return ResponseEntity.ok(payment);
         } catch (Exception e) {
             throw new RuntimeException("Failed to process passenger payment: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/confirm/{paymentId}")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Payment> confirmPayment(
+            @PathVariable Long paymentId,
+            @AuthenticationPrincipal User currentUser) {
+        try {
+            Payment payment = paymentService.confirmPayment(paymentId);
+            return ResponseEntity.ok(payment);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to confirm payment: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/reject/{paymentId}")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<Payment> rejectPayment(
+            @PathVariable Long paymentId,
+            @AuthenticationPrincipal User currentUser) {
+        try {
+            Payment payment = paymentService.rejectPayment(paymentId);
+            return ResponseEntity.ok(payment);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to reject payment: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<List<Payment>> getPendingPayments(@AuthenticationPrincipal User currentUser) {
+        try {
+            List<Payment> pendingPayments = paymentService.getPendingPaymentsForDriver(currentUser.getUserId());
+            return ResponseEntity.ok(pendingPayments);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get pending payments: " + e.getMessage());
         }
     }
 

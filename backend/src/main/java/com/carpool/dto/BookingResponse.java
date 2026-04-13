@@ -22,6 +22,9 @@ public class BookingResponse {
     private LocalDateTime otpGeneratedAt;
     private LocalDateTime waitingStartedAt;
     private RideStatus rideStatus;
+    private String paymentStatus;
+    private String paymentMethod;
+    private Double paymentAmount;
 
     public static BookingResponse from(Booking b) {
         b.refreshWaitingCharge();
@@ -42,6 +45,14 @@ public class BookingResponse {
         r.otpGeneratedAt = b.getOtpGeneratedAt();
         r.waitingStartedAt = b.getWaitingStartedAt();
         r.rideStatus = b.getRide().getStatus();
+
+        // Include payment information if available
+        if (b.getPayment() != null) {
+            r.paymentStatus = b.getPayment().getStatus().name();
+            r.paymentMethod = b.getPayment().getPaymentMethod();
+            r.paymentAmount = b.getPayment().getAmount();
+        }
+
         return r;
     }
 
@@ -60,4 +71,7 @@ public class BookingResponse {
     public LocalDateTime getOtpGeneratedAt() { return otpGeneratedAt; }
     public LocalDateTime getWaitingStartedAt() { return waitingStartedAt; }
     public RideStatus getRideStatus() { return rideStatus; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public Double getPaymentAmount() { return paymentAmount; }
 }

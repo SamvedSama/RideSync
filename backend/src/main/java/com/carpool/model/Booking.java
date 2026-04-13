@@ -43,6 +43,7 @@ public class Booking {
     private Ride ride;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Payment payment;
 
     @Column(nullable = false)

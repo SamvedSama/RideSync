@@ -17,9 +17,45 @@ import java.util.List;
 /**
  * AdminServiceImpl — concrete implementation of AdminService.
  *
- * Defence-in-depth: even though the controller guards access via @PreAuthorize,
- * the service still validates the admin role so it cannot be misused if called
- * programmatically from another service.
+ * DESIGN PATTERNS USED:
+ * 1. Service Layer Pattern - Encapsulates administrative business logic
+ *    - Centralizes admin operations (ban, unban, role change, ride cancel)
+ *    - Validates admin permissions before executing actions
+ *    - Ensures consistent audit logging for all admin actions
+ *
+ * 2. Repository Pattern - Uses UserRepository, RideRepository, AdminAuditLogRepository
+ *    - Abstracts data access for users, rides, and audit logs
+ *    - Decouples service layer from database implementation
+ *
+ * DESIGN PRINCIPLES:
+ * 1. Dependency Inversion Principle (DIP)
+ *    - AdminController depends on AdminService interface, not this implementation
+ *    - Service depends on repository abstractions
+ *
+ * 2. Single Responsibility Principle (SRP)
+ *    - Admin logic separated from regular user operations
+ *    - Each method handles one specific admin action
+ *
+ * 3. Interface Segregation Principle (ISP)
+ *    - AdminService contains only admin-specific methods
+ *    - No unused methods forced on clients
+ *
+ * 4. Defence-in-depth: even though the controller guards access via @PreAuthorize,
+ *    the service still validates the admin role so it cannot be misused if called
+ *    programmatically from another service.
+ *
+ * CREATIONAL PATTERNS:
+ * - Singleton Pattern: Spring @Service annotation creates singleton bean
+ *   - Spring container ensures single instance per application context
+ *   - Thread-safe transaction management for audit logging
+ *
+ * - Constructor Injection Pattern
+ *   - Dependencies injected via constructor (not @Autowired fields)
+ *   - Enables immutability and easier testing
+ *
+ * - No Factory/Builder/Prototype patterns used
+ *   - AdminAuditLog created directly with 'new AdminAuditLog()'
+ *   - Could be improved with AdminAuditLogFactory for different log types
  */
 @Service
 @Transactional

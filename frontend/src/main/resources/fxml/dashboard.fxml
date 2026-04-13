@@ -45,6 +45,7 @@
     </HBox>
 
     <VBox spacing="10" alignment="CENTER">
+        <Button fx:id="adminDashboardButton" mnemonicParsing="false" onAction="#goToAdminDashboard" text="Admin Dashboard" styleClass="button" style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-pref-width: 200; -fx-pref-height: 45;" visible="false" />
         <Button mnemonicParsing="false" onAction="#goToProfile" text="My Profile" styleClass="button-secondary" style="-fx-pref-width: 200; -fx-pref-height: 45;" />
         <Button mnemonicParsing="false" onAction="#handleLogout" text="Logout" styleClass="button-danger" style="-fx-pref-width: 200; -fx-pref-height: 45;" />
     </VBox>

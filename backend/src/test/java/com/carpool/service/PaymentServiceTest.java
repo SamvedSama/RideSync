@@ -151,22 +151,22 @@ class PaymentServiceTest {
 
     @Test
     void testGetPaymentByBookingId() {
-        when(paymentRepository.findByBookingId(1L)).thenReturn(Arrays.asList(testPayment));
+        when(paymentRepository.findByBooking_Id(1L)).thenReturn(Arrays.asList(testPayment));
 
         Optional<Payment> result = paymentService.getPaymentByBookingId(1L);
 
         assertTrue(result.isPresent());
         assertEquals(testPayment, result.get());
-        verify(paymentRepository).findByBookingId(1L);
+        verify(paymentRepository).findByBooking_Id(1L);
     }
 
     @Test
     void testGetPaymentByBookingIdNotFound() {
-        when(paymentRepository.findByBookingId(1L)).thenReturn(Arrays.asList());
+        when(paymentRepository.findByBooking_Id(1L)).thenReturn(Arrays.asList());
 
         Optional<Payment> result = paymentService.getPaymentByBookingId(1L);
 
         assertFalse(result.isPresent());
-        verify(paymentRepository).findByBookingId(1L);
+        verify(paymentRepository).findByBooking_Id(1L);
     }
 }

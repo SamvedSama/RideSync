@@ -61,7 +61,7 @@ public class PaymentService {
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), Payment.class);
         } else {
-            throw new Exception("Failed to process passenger payment: " + response.statusCode());
+            throw new Exception("Failed to process passenger payment: " + response.statusCode() + " - " + response.body());
         }
     }
     
@@ -148,6 +148,69 @@ public class PaymentService {
             return objectMapper.readValue(response.body(), new TypeReference<List<Payment>>() {});
         } else {
             throw new Exception("Failed to fetch ride payments: " + response.statusCode());
+        }
+    }
+    
+    public List<Payment> getPendingPayments() throws Exception {
+        String token = SessionManager.getToken();
+        if (token == null) {
+            throw new Exception("Not authenticated");
+        }
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/pending"))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), new TypeReference<List<Payment>>() {});
+        } else {
+            throw new Exception("Failed to fetch pending payments: " + response.statusCode());
+        }
+    }
+    
+    public Payment confirmPayment(Long paymentId) throws Exception {
+        String token = SessionManager.getToken();
+        if (token == null) {
+            throw new Exception("Not authenticated");
+        }
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/confirm/" + paymentId))
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Payment.class);
+        } else {
+            throw new Exception("Failed to confirm payment: " + response.statusCode());
+        }
+    }
+    
+    public Payment rejectPayment(Long paymentId) throws Exception {
+        String token = SessionManager.getToken();
+        if (token == null) {
+            throw new Exception("Not authenticated");
+        }
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/reject/" + paymentId))
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), Payment.class);
+        } else {
+            throw new Exception("Failed to reject payment: " + response.statusCode());
         }
     }
 }

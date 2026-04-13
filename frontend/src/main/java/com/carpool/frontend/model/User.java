@@ -7,6 +7,7 @@ public class User {
     private String phone;
     private String role;
     private boolean verified;
+    private boolean banned;
     private double rating;
     private String licenseNumber;
     private String vehicleModel;
@@ -39,6 +40,9 @@ public class User {
 
     public boolean isVerified() { return verified; }
     public void setVerified(boolean verified) { this.verified = verified; }
+
+    public boolean isBanned() { return banned; }
+    public void setBanned(boolean banned) { this.banned = banned; }
 
     public double getRating() { return rating; }
     public void setRating(double rating) { this.rating = rating; }
